@@ -1,0 +1,44 @@
+package com.the7winds.verbumSecretum.server.game;
+
+import com.the7winds.verbumSecretum.server.network.ConnectionHandler;
+
+import java.util.Collection;
+import java.util.Queue;
+
+/**
+ * Created by the7winds on 28.10.15.
+ */
+public class Player {
+
+    private String name;
+    private ConnectionHandler connection;
+
+    private Collection<Game.Card> handCards;
+    private Queue<Game.Card> playedCards;
+
+    public Player(ConnectionHandler connection, String name) {
+        this.connection = connection;
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Queue<Game.Card> getPlayedCards() {
+        return playedCards;
+    }
+
+    public Collection<Game.Card> getHandCards() {
+        return handCards;
+    }
+
+    public Game.Card getHandCard() {
+        return (handCards.isEmpty() ? null : handCards.iterator().next());
+    }
+
+    public void addCard(Game.Card card) {
+        handCards.add(card);
+    }
+
+}
