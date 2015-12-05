@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">Verbum Secretum</string>
+
+    <!-- menu -->
+
+    <string name="menu_title">Verbum Secretum</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_statistics">Statistics</string>
+    <string name="menu_choose">Choose another player</string>
+    <string name="menu_play">Play</string>
+
+    <!-- login -->
+
+    <string name="login_info">Enter your name or choose from existed players</string>
+    <string name="login">login</string>
+    <string name="login_confirm">ok</string>
+    <!--string name="login_enter_word">enter your login here</string-->
+
+    <!-- settings -->
+
+    <!-- statistics -->
+
+    <string name="statistics_title">Statistics</string>
+    <string name="statistics_all">all games:</string>
+    <string name="statistics_won">won games:</string>
+    <string name="statistics_back">back to menu</string>
+
+    <!-- room -->
+    <string name="room_title">Connected players:"</string>
+    <string name="room_ready">ready</string>
+    <string name="room_back">back</string>
+    <string name="empty_name"><![CDATA[<----->]]></string>
+    <string name="common_error_message">error! reboot device</string>
+    <string name="server_not_found_error_message">server not found</string>
+
+</resources>
