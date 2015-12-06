@@ -1,6 +1,8 @@
 package com.the7winds.verbumSecretum.client.other;
 
 import com.the7winds.verbumSecretum.other.Message;
+import com.the7winds.verbumSecretum.server.game.Game;
+import com.the7winds.verbumSecretum.server.network.ServerMessages;
 
 import java.util.Map;
 
@@ -8,8 +10,6 @@ import java.util.Map;
  * Created by the7winds on 05.12.15.
  */
 public class Events {
-
-    private Events() {}
 
     public static class ReceivedMessage {
         public ReceivedMessage(String message) {
@@ -20,27 +20,6 @@ public class Events {
     }
 
     public static class ClientServiceError {
-
-    }
-
-    public static class Disconnected {
-
-    }
-
-    public static class StartGame {
-
-    }
-
-    public static class Connected {
-    }
-
-    public static class UpdateRoomEvent {
-
-        public UpdateRoomEvent(Map<String, String> playersNames) {
-            this.playersNames = playersNames;
-        }
-
-        public Map<String, String> playersNames;
     }
 
     public static class SendToServerEvent {
@@ -59,5 +38,8 @@ public class Events {
     }
 
     public static class ServerNotFoundError {
+    }
+
+    public static class SelectRole {
     }
 }

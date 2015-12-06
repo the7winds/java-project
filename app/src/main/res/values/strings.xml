@@ -32,5 +32,12 @@
     <string name="empty_name"><![CDATA[<----->]]></string>
     <string name="common_error_message">error! reboot device</string>
     <string name="server_not_found_error_message">server not found</string>
+    <string name="room_connected">connected</string>
+
+    <!-- game -->
+    <string name="game_ava_layout">ava_layout</string>
+    <string name="game_player_name">player_name</string>
+    <string name="game_played_cards">played_cards</string>
+    <string name="game_choose_row">choose</string>
 
 </resources>

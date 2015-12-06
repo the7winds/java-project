@@ -16,8 +16,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.the7winds.verbumSecretum.server.network.ConnectionHandler.getReceivedMessageQueue;
-
 /**
  * Created by the7winds on 05.12.15.
  */
@@ -45,38 +43,35 @@ public class WaitingPlayersHandler {
         acceptorExecutorService.execute(new NewConnectionsAcceptor());
         waitPlayers();
         acceptorExecutorService.shutdownNow();
-        server.unregisterNsd();
         disconnectNotPlaying();
 
         return readyPlayers;
     }
 
     private void disconnectNotPlaying() {
+        server.unregisterNsdManager();
+
         Set<String> notPlaying = allConnections.keySet();
         notPlaying.removeAll(readyPlayers.keySet());
 
         for (String id : notPlaying) {
-            ConnectionHandler connectionHandler = allConnections.get(id);
-            server.sendTo(id, new ServerMessages.Disconnected());
-            connectionHandler.close();
-            allConnections.remove(id);
+            server.disconnect(id);
         }
     }
 
     private void waitPlayers() {
         timeChangesExecutorService.submit(new TimeChanges());
 
-        //while (!timeChangesExecutorService.isTerminated()) {
-        while (true) {
+        while (!timeChangesExecutorService.isTerminated()) {
             boolean broadcastFlag = false;
             boolean timeFlag = false;
 
             broadcastFlag = onMessageReceived();
             timeFlag = broadcastFlag | (readyPlayers.size() < MIN_PLAYERS_NUM);
             if (timeFlag) {
-            //    timeChangesExecutorService.shutdownNow();
-            //    timeChangesExecutorService = Executors.newSingleThreadExecutor();
-            //    timeChangesExecutorService.submit(new TimeChanges());
+                timeChangesExecutorService.shutdownNow();
+                timeChangesExecutorService = Executors.newSingleThreadExecutor();
+                timeChangesExecutorService.submit(new TimeChanges());
             }
             if (broadcastFlag) {
                 server.broadcast(new ServerMessages.WaitingPlayersStatus(readyPlayers));
@@ -85,13 +80,7 @@ public class WaitingPlayersHandler {
     }
 
     private boolean onMessageReceived() {
-        Pair<String, String> idMsg = null;
-
-        synchronized (getReceivedMessageQueue()) {
-            if (!getReceivedMessageQueue().isEmpty()) {
-                idMsg = getReceivedMessageQueue().remove();
-            }
-        }
+        Pair<String, String> idMsg = ConnectionHandler.popMessage();
 
         if (idMsg != null) {
             String id = idMsg.first;
@@ -103,15 +92,11 @@ public class WaitingPlayersHandler {
             switch (jsonObject.get("HEAD").getAsString()) {
 
                 case PlayerMessages.Leave.HEAD: {
-                    PlayerMessages.Leave msg = new PlayerMessages.Leave();
-                    msg.deserialize(strMsg);
-                    return onMessageLeaveReceived(id, msg);
+                    return onMessageLeaveReceived(id, null);
                 }
 
                 case PlayerMessages.NotReady.HEAD: {
-                    PlayerMessages.NotReady msg = new PlayerMessages.NotReady();
-                    msg.deserialize(strMsg);
-                    return onMessageNotReadyReceived(id, msg);
+                    return onMessageNotReadyReceived(id, null);
                 }
 
                 case PlayerMessages.Ready.HEAD: {
@@ -149,8 +134,7 @@ public class WaitingPlayersHandler {
             res = true;
         }
 
-        ConnectionHandler connectionHandler = allConnections.remove(id);
-        connectionHandler.close();
+        server.disconnect(id);
 
         return res;
     }

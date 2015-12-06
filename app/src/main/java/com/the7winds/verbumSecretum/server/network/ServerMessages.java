@@ -1,5 +1,7 @@
 package com.the7winds.verbumSecretum.server.network;
 
+import android.util.Pair;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -9,9 +11,9 @@ import com.the7winds.verbumSecretum.server.game.Game;
 import com.the7winds.verbumSecretum.server.game.Player;
 
 import java.util.Hashtable;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Queue;
+import java.util.Set;
 
 /**
  * Created by the7winds on 21.11.15.
@@ -136,6 +138,15 @@ public class ServerMessages {
         private static final String CARDS_FIELD = "cards";
 
         private Map<String, String> idToNames = new Hashtable<>();
+
+        public Map<String, String> getIdToNames() {
+            return idToNames;
+        }
+
+        public Map<String, Game.Card> getIdToCard() {
+            return idToCard;
+        }
+
         private Map<String, Game.Card> idToCard = new Hashtable<>();
 
         public GameStart() {
@@ -152,8 +163,6 @@ public class ServerMessages {
 
         @Override
         public String serialize() {
-            Gson gson = new Gson();
-
             JsonObject gameStart = getBaseJsonObject();
 
             JsonArray ids = new JsonArray();
@@ -170,7 +179,7 @@ public class ServerMessages {
             gameStart.add(NAMES_FIELD, names);
             gameStart.add(CARDS_FIELD, cards);
 
-            return gson.toJson(gameStart);
+            return new Gson().toJson(gameStart);
         }
 
         @Override
@@ -205,52 +214,60 @@ public class ServerMessages {
     public static class GameState extends Message {
         public static final String HEAD = "GameState";
         // JSON structure
-        // TODO
+        private static final String NEW_PLAYED_CARD_ID_FIELD = "new_played_card_id";
+        private static final String NEW_PLAYED_CARD_FIELD = "new_played_card";
+        private static final String CARDS_THAT_SHOULD_BE_SHOWED_ID_FIELD = "cards_that_should_be_showed_id";
+        private static final String CARDS_THAT_SHOULD_BE_SHOWED_CARDS_FIELD = "cards_that_should_be_showed_cards";
+        private static final String CURRENT_FIELD = "current";
+        private static final String ACTIVE_PLAYERS_ID_FIELD = "active_players_id";
 
 
-        private Map<String, Queue<Game.Card>> playedCards = new Hashtable<>();
+        // fields
+        private Pair<String, Game.Card> newPlayedCard;
         private Map<String, Game.Card> cardsThatShouldBeShowed = new Hashtable<>();
         private String current;
+        private Set<String> activePlayersId = new LinkedHashSet<>();
+
+        public Pair<String, Game.Card> getNewPlayedCard() {
+            return newPlayedCard;
+        }
+
+        public Map<String, Game.Card> getCardsThatShouldBeShowed() {
+            return cardsThatShouldBeShowed;
+        }
+
+        public String getCurrent() {
+            return current;
+        }
+
+        public Set<String> getActivePlayersId() {
+            return activePlayersId;
+        }
 
         public GameState() {
             super(HEAD);
         }
 
-        public GameState(String current,
-                         Map<String, Player> players, Map<String, Game.Card> cardsThatShouldBeShowed) {
+        public GameState(String current
+                         , Pair<String, Game.Card> newPlayedCard
+                         , Map<String, Game.Card> cardsThatShouldBeShowed
+                         , Set<String> activePlayersId) {
             super(HEAD);
-            for (String id : players.keySet()) {
-                playedCards.put(id, players.get(id).getPlayedCards());
-            }
-            this.cardsThatShouldBeShowed = cardsThatShouldBeShowed;
+
             this.current = current;
+            this.newPlayedCard = newPlayedCard;
+            this.cardsThatShouldBeShowed = cardsThatShouldBeShowed;
+            this.activePlayersId = activePlayersId;
         }
 
         @Override
-        public String serialize() { // TODO
-            Gson gson = new Gson();
+        public String serialize() {
+            JsonObject gameData = getBaseJsonObject();
 
-            JsonObject gameData = new JsonObject();
+            gameData.addProperty(CURRENT_FIELD, current);
 
-            gameData.addProperty("HEAD", HEAD);
-
-            JsonArray playersData = new JsonArray();
-
-            for (String id : playedCards.keySet()) {
-                JsonObject playerData = new JsonObject();
-
-                playerData.addProperty("id", id);
-
-                JsonArray playedCards = new JsonArray();
-
-                for (Game.Card card : this.playedCards.get(id)) {
-                    playedCards.add(card.name());
-                }
-
-                playerData.add("playedCards", playedCards);
-            }
-
-            gameData.addProperty("current", current);
+            gameData.addProperty(NEW_PLAYED_CARD_ID_FIELD, newPlayedCard.first);
+            gameData.addProperty(NEW_PLAYED_CARD_FIELD, newPlayedCard.second.toString());
 
             JsonArray ids = new JsonArray();
             JsonArray cards = new JsonArray();
@@ -260,14 +277,17 @@ public class ServerMessages {
                 cards.add(cardsThatShouldBeShowed.get(id).name());
             }
 
-            JsonObject cardsThatShouldBeShowed = new JsonObject();
-            cardsThatShouldBeShowed.add("ids", ids);
-            cardsThatShouldBeShowed.add("cards", cards);
+            gameData.add(CARDS_THAT_SHOULD_BE_SHOWED_ID_FIELD, ids);
+            gameData.add(CARDS_THAT_SHOULD_BE_SHOWED_CARDS_FIELD, cards);
 
-            gameData.add("cardsThatShouldBeShowed", cardsThatShouldBeShowed);
+            JsonArray activeIds = new JsonArray();
+            for (String id : activePlayersId) {
+                activeIds.add(id);
+            }
 
+            gameData.add(ACTIVE_PLAYERS_ID_FIELD, activeIds);
 
-            return gson.toJson(gameData);
+            return new Gson().toJson(gameData);
         }
 
         @Override
@@ -275,31 +295,24 @@ public class ServerMessages {
             JsonParser jsonParser = new JsonParser();
             JsonObject jsonObject = jsonParser.parse(str).getAsJsonObject();
 
-            this.current = jsonObject.get("current").getAsString();
+            current = jsonObject.get(CURRENT_FIELD).getAsString();
 
-            JsonObject cardsThatShouldBeShowed = jsonObject.getAsJsonObject("cardsThatShouldBeShowed");
-            JsonArray ids = cardsThatShouldBeShowed.getAsJsonArray("ids");
-            JsonArray cards = cardsThatShouldBeShowed.getAsJsonArray("cards");
+            newPlayedCard = new Pair<>(jsonObject.get(NEW_PLAYED_CARD_ID_FIELD).getAsString(),
+                    Game.Card.valueOf(jsonObject.get(NEW_PLAYED_CARD_FIELD).getAsString()));
+
+            JsonArray ids = jsonObject.getAsJsonArray(CARDS_THAT_SHOULD_BE_SHOWED_ID_FIELD);
+            JsonArray cards = jsonObject.getAsJsonArray(CARDS_THAT_SHOULD_BE_SHOWED_CARDS_FIELD);
 
             for (int i = 0; i < ids.size(); i++) {
                 String id = ids.get(i).getAsString();
                 Game.Card card = Game.Card.valueOf(cards.get(i).getAsString());
-                this.cardsThatShouldBeShowed.put(id, card);
+                cardsThatShouldBeShowed.put(id, card);
             }
 
-            JsonArray playedCards = jsonObject.getAsJsonArray("playedCards");
+            JsonArray activeIds = jsonObject.get(ACTIVE_PLAYERS_ID_FIELD).getAsJsonArray();
 
-            for (int i = 0; i < playedCards.size(); i++) {
-                JsonObject playerData = playedCards.get(i).getAsJsonObject();
-                String id = playerData.get("id").getAsString();
-                cards = playerData.getAsJsonArray("cards");
-                Queue<Game.Card> cardQueue = new LinkedList<>();
-
-                for (int j = 0; j < cards.size(); j++) {
-                    cardQueue.add(Game.Card.valueOf(cards.get(j).getAsString()));
-                }
-
-                this.playedCards.put(id, cardQueue);
+            for (int i = 0; i < activeIds.size(); i++) {
+                activePlayersId.add(activeIds.get(i).getAsString());
             }
 
             return this;
@@ -308,6 +321,14 @@ public class ServerMessages {
 
     public static class YourTurn extends Message {
         public final static String HEAD = "YourTurn";
+        // json structure
+        private final static String CARD_FIELD = "card";
+
+        public Game.Card getCard() {
+            return card;
+        }
+
+        // fields
         private Game.Card card;
 
         public YourTurn() {
@@ -321,13 +342,11 @@ public class ServerMessages {
 
         @Override
         public String serialize() {
-            Gson gson = new Gson();
-
             JsonObject yourTurn = getBaseJsonObject();
 
-            yourTurn.addProperty("card", card.name());
+            yourTurn.addProperty(CARD_FIELD, card.name());
 
-            return gson.toJson(yourTurn);
+            return new Gson().toJson(yourTurn);
         }
 
         @Override
@@ -345,31 +364,39 @@ public class ServerMessages {
     public static class InvalidMove extends Message {
         public static final String HEAD = "HEAD";
 
-        InvalidMove() {
+        public InvalidMove() {
             super(HEAD);
         }
     }
 
-    public static class GameOver extends Message { // TODO
+    public static class GameOver extends Message {
         public static final String HEAD = "GameOver";
+        // json structure fields
+        private static final String WINNERS_FIELD = "winners";
+        private static final String HAND_CARDS_IDS_FIELD = "ids";
+        private static final String HAND_CARDS_CARDS_FIELD = "cards";
+
+        // fields
+        private Map<String, Game.Card> handCards;
         private String[] winners;
 
         public GameOver() {
             super(HEAD);
         }
 
-        public GameOver(String[] result) {
+        public GameOver(String[] result, Map<String, Player> players) {
             super(HEAD);
+
             winners = result;
+
+            for (String id : players.keySet()) {
+                handCards.put(id, players.get(id).getHandCard());
+            }
         }
 
         @Override
         public String serialize() {
-            Gson gson = new Gson();
-
-            JsonObject gameOver = new JsonObject();
-
-            gameOver.addProperty("HEAD", HEAD);
+            JsonObject gameOver = getBaseJsonObject();
 
             JsonArray winners = new JsonArray();
 
@@ -377,20 +404,40 @@ public class ServerMessages {
                 winners.add(winner);
             }
 
-            gameOver.add("winners", winners);
+            gameOver.add(WINNERS_FIELD, winners);
 
-            return gson.toJson(gameOver);
+            JsonArray ids = new JsonArray();
+            JsonArray cards = new JsonArray();
+
+            for (String id : handCards.keySet()) {
+                ids.add(id);
+                cards.add(handCards.get(id).toString());
+            }
+
+            gameOver.add(HAND_CARDS_IDS_FIELD, ids);
+            gameOver.add(HAND_CARDS_CARDS_FIELD, cards);
+
+            return new Gson().toJson(gameOver);
         }
 
         @Override
         public Message deserialize(String str) {
             JsonParser jsonParser = new JsonParser();
-            JsonObject jsonObject = new JsonObject().getAsJsonObject();
+            JsonObject jsonObject = jsonParser.parse(str).getAsJsonObject();
 
-            JsonArray jsonArray = jsonObject.getAsJsonArray("winners");
-            winners = new String[jsonArray.size()];
+            JsonArray jWinners = jsonObject.getAsJsonArray(WINNERS_FIELD);
+            JsonArray jIds = jsonObject.getAsJsonArray(HAND_CARDS_IDS_FIELD);
+            JsonArray jCards = jsonObject.getAsJsonArray(HAND_CARDS_CARDS_FIELD);
+
+            winners = new String[jWinners.size()];
             for (int i = 0; i < winners.length; i++) {
-                winners[i] = jsonArray.get(i).getAsString();
+                winners[i] = jWinners.get(i).getAsString();
+            }
+
+            for (int i = 0; i < jIds.size(); i++) {
+                String id = jIds.get(i).getAsString();
+                Game.Card card = Game.Card.valueOf(jCards.get(i).getAsString());
+                handCards.put(id, card);
             }
 
             return this;

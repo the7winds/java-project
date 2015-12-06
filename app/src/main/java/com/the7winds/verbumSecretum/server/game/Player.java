@@ -41,4 +41,7 @@ public class Player {
         handCards.add(card);
     }
 
+    public String getId() {
+        return connection.getId();
+    }
 }

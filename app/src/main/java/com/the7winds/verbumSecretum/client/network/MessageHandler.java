@@ -7,16 +7,14 @@ import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.other.Message;
 import com.the7winds.verbumSecretum.server.network.ServerMessages;
 
+import java.util.Hashtable;
+
 import de.greenrobot.event.EventBus;
 
 /**
  * Created by the7winds on 05.12.15.
  */
 public class MessageHandler {
-
-    // fields
-    private enum State {RECEIVE_ID, WAITING_PLAYERS, PLAYING}
-    private State state = State.RECEIVE_ID;
 
     // handler
     public void onEvent(Events.ReceivedMessage receivedMessage) {
@@ -26,22 +24,22 @@ public class MessageHandler {
 
         switch (jsonObject.get("HEAD").getAsString()) {
             case ServerMessages.GameOver.HEAD:
-                // res = new ServerMessages.GameOver().deserialize(s);
+                onGameOver(msg);
                 break;
             case ServerMessages.InvalidMove.HEAD:
-                // res = new ServerMessages.InvalidMove().deserialize(s);
+                onInvalidMoveMessage(msg);
                 break;
             case ServerMessages.YourTurn.HEAD:
-                // res = new ServerMessages.YourTurn().deserialize(s);
+                onYourTurnMessage(msg);
                 break;
             case ServerMessages.GameState.HEAD:
-                // res = new ServerMessages.GameState().deserialize(s);
+                onGameStateMessage(msg);
                 break;
             case ServerMessages.GameStart.HEAD:
-                // res = new ServerMessages.GameStart().deserialize(s);
+                onStartMessage(msg);
                 break;
             case ServerMessages.GameStarting.HEAD:
-                // onGameStarting();
+                onStartingMessage(msg);
                 break;
             case ServerMessages.Disconnected.HEAD:
                 onDisconnected();
@@ -55,12 +53,58 @@ public class MessageHandler {
         }
     }
 
+    // Check
+    private void onGameOver(String msg) {
+        ServerMessages.GameOver message = new ServerMessages.GameOver();
+        message.deserialize(msg);
+
+        EventBus.getDefault().post(message);
+    }
+
+    private void onInvalidMoveMessage(String msg) {
+        EventBus.getDefault().post(new ServerMessages.InvalidMove());
+    }
+
+    private void onYourTurnMessage(String msg) {
+        ServerMessages.YourTurn message = new ServerMessages.YourTurn();
+        message.deserialize(msg);
+
+        EventBus.getDefault().post(message);
+    }
+
+    private void onGameStateMessage(String msg) {
+        ServerMessages.GameState message = new ServerMessages.GameState();
+        message.deserialize(msg);
+
+        EventBus.getDefault().post(message);
+    }
+
+    // +--OK-----------------------------------------
+    // |
+    // V
+    private void onStartMessage(String msg) {
+        ServerMessages.GameStart message = new ServerMessages.GameStart();
+        message.deserialize(msg);
+
+        ClientData.hand.add(message.getIdToCard().get(ClientData.id));
+        ClientData.playersNames = new Hashtable<>(message.getIdToNames());
+        ClientData.activePlayersNames = new Hashtable<>(message.getIdToNames());
+
+        EventBus.getDefault().post(message);
+    }
+
+    private void onStartingMessage(String msg) {
+        ServerMessages.GameStart message = new ServerMessages.GameStart();
+        message.deserialize(msg);
+        EventBus.getDefault().post(message);
+    }
+
     private void onWaitingStatusMessage(String msg) {
         ServerMessages.WaitingPlayersStatus message = new ServerMessages.WaitingPlayersStatus();
         message.deserialize(msg);
 
         ClientData.playersNames = message.getPlayersNames();
-        EventBus.getDefault().post(new Events.UpdateRoomEvent(ClientData.playersNames));
+        EventBus.getDefault().post(message);
     }
 
     private void onDisconnected() {
@@ -72,8 +116,7 @@ public class MessageHandler {
         message.deserialize(msg);
 
         ClientData.id = message.getId();
-        state = State.WAITING_PLAYERS;
 
-        EventBus.getDefault().post(new Events.Connected());
+        EventBus.getDefault().post(message);
     }
 }

@@ -1,64 +1,96 @@
 package com.the7winds.verbumSecretum.server.network;
 
+import android.util.Pair;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.the7winds.verbumSecretum.client.network.PlayerMessages;
+import com.the7winds.verbumSecretum.server.game.Game;
+import com.the7winds.verbumSecretum.server.game.Player;
+
+import java.util.Map;
+
 /**
  * Created by the7winds on 05.12.15.
  */
 public class GameHandler {
 
-    /*
-        private void playGame() {
-        for (;!game.isFinished();) {
-            broadcast(new ServerMessages.GameState( game.getCurrent(),
-                    game.getActivePlayers(),
-                    game.getCardsThatShouldBeShowed()));
+    private final Server server;
+    private final Map<String, Player> players;
+    private Game game;
 
-            if (!receivedPlayersMessages.isEmpty()) {
-                ServerUtils.MessagePair messagePair = receivedPlayersMessages.remove();
-                String id = messagePair.id;
-                Message message = messagePair.message;
+    public GameHandler(Server server, Map<String, Player> players) {
+        this.server = server;
+        this.players = players;
+    }
 
-                if (game.isActive(id) && message.getClass().equals(PlayerMessages.Leave.class)) {
-                    terminateGame();
-                } else if (!game.isActive(id) && message.getClass().equals(PlayerMessages.Leave.class)) {
-                    connectionHandlerMap.get(id).interrupt();
-                    playersMap.remove(id);
-                } else {
-                    Assert.assertEquals(message.getClass(), PlayerMessages.Move.class);
-                    Game.Move move = ((PlayerMessages.Move) message).getMove();
-                    if (game.testMove(move)) {
-                        game.applyMove(move);
-                    } else {
-                        sendTo(id, new ServerMessages.InvalidMove());
-                    }
+    public void startGame() {
+        server.broadcast(new ServerMessages.GameStarting());
+
+        game = new Game(players);
+
+        server.broadcast(new ServerMessages.GameStart(game.getActivePlayers()));
+
+        playGame();
+
+        finishGame();
+
+        server.teminate();
+    }
+
+    private void playGame() {
+        while (!game.isFinished()) {
+            Pair<String, String> idMsg = ConnectionHandler.popMessage();
+
+            if (idMsg != null) {
+                String id = idMsg.first;
+                String msg = idMsg.second;
+
+                JsonParser jsonParser = new JsonParser();
+                JsonObject jsonObject = jsonParser.parse(msg).getAsJsonObject();
+
+                switch (jsonObject.get("HEAD").getAsString()) {
+
+                    case PlayerMessages.Move.HEAD:
+                        PlayerMessages.Move message = new PlayerMessages.Move();
+                        message.deserialize(msg);
+                        onMoveMessage(id, message);
+                        break;
+
+                    case PlayerMessages.Leave.HEAD:
+                        onLeave(id, null);
+                        break;
                 }
             }
         }
-
-        broadcast(new ServerMessages.GameState( game.getCurrent(),
-                game.getActivePlayers(),
-                game.getCardsThatShouldBeShowed()));
     }
 
+    private void finishGame() {
+        server.broadcast(new ServerMessages.GameOver(game.getResults(), game.getActivePlayers()));
+    }
 
+    private void onMoveMessage(String id, PlayerMessages.Move message) {
+        Game.Move move = message.getMove();
 
-
-    private void startGame() {
-        broadcast(new ServerMessages.GameStarting());
-
-        while (!receivedPlayersMessages.isEmpty()) {
-            ServerUtils.MessagePair messagePair = receivedPlayersMessages.remove();
-            String id = messagePair.id;
-            Message message = messagePair.message;
-            if (playersMap.containsKey(id)) {
-                if (message.getClass().equals(PlayerMessages.Leave.class)) {
-                    terminateGame();
-                }
+        if (game.isValidMove(move)) {
+            game.applyMove(move);
+            if (game.nextPlayer()) {
+                server.broadcast(new ServerMessages.GameState(game.getCurrent(),
+                        game.getLastChange(),
+                        game.getCardsThatShouldBeShowed(),
+                        game.getActivePlayers().keySet()));
+                server.sendTo(id, new ServerMessages.YourTurn(game.getTopCard()));
             }
+        } else {
+            server.sendTo(id, new ServerMessages.InvalidMove());
         }
-
-        game = new Game(playersMap);
-
-        broadcast(new ServerMessages.GameStart(game.getActivePlayers()));
     }
-     */
+
+    private void onLeave(String id, PlayerMessages.Leave message) {
+        if (game.isActivePlayer(id)) {
+            server.teminate();
+        } else {
+            server.disconnect(id);
+        }
+    }
 }

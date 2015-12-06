@@ -1,10 +1,13 @@
 package com.the7winds.verbumSecretum.server.game;
 
-import com.the7winds.verbumSecretum.server.game.Player;
+import android.util.Pair;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
@@ -16,40 +19,61 @@ public class Game {
 
     private boolean finished = false;
 
-    private Map<String, Player> players;
+    private Map<String, Player> activePlayers;
 
-    private int currentIndx = 0;
+    private Player[] players;
 
-    private String currentId;
+    private int currentIdx;
 
-    private String[] ids;
+    private Queue<Card> deck = new LinkedList<>();
 
-    private Player currentPlayer;
-
-    private Queue<Card> deck;
-
-    private Map<String, Card> cardsThatShouldBeShowed;
+    private Map<String, Card> cardsThatShouldBeShowed = new Hashtable<>();
 
     Random random = new Random();
 
+    public Pair<String, Card> getLastChange() {
+        return lastChange;
+    }
+
+    private Pair<String, Card> lastChange;
+
     public Map<String, Player> getActivePlayers() {
-        return players;
+        return activePlayers;
     }
 
     public String getCurrent() {
-        return currentId;
+        return players[currentIdx].getId();
     }
 
-    public boolean isActive(String id) {
-        return players.containsKey(id);
+    public boolean isActivePlayer(String id) {
+        return activePlayers.containsKey(id);
     }
 
-    public String[] result() {
-        return new String[0];
+    public String[] getResults() {
+        if (activePlayers.size() == 1) {
+            return new String[] {((Player[]) activePlayers.values().toArray())[0].getName()};
+        } else {
+            Collection<String> winners = new LinkedList<>();
+            Card max = Card.GUARD_CARD;
+            for (Player player : activePlayers.values()) {
+                if (player.getHandCard() == max) {
+                    winners.add(player.getName());
+                } else if (player.getHandCard().ordinal() > max.ordinal()) {
+                    max = player.getHandCard();
+                    winners = new LinkedList<>();
+                    winners.add(player.getName());
+                }
+            }
+            return (String[]) winners.toArray();
+        }
     }
 
     public Map<String,Card> getCardsThatShouldBeShowed() {
         return cardsThatShouldBeShowed;
+    }
+
+    public Card getTopCard() {
+        return deck.remove();
     }
 
     public enum Card {
@@ -70,13 +94,10 @@ public class Game {
         public Card role;
     }
 
-    public Game(Map<String, Player> players) {
-        this.players = players;
-        cardsThatShouldBeShowed = new Hashtable<>();
-        deck = new LinkedList<>();
-        ids = players.keySet().toArray(new String[players.size()]);
-        currentId = ids[0];
-        currentIndx = 0;
+    public Game(Map<String, Player> allPlayers) {
+        activePlayers = allPlayers;
+        players = (Player[]) allPlayers.values().toArray();
+        currentIdx = random.nextInt();
 
         initDec();
         giveCards();
@@ -85,19 +106,12 @@ public class Game {
     public void initDec() {
         final int TIMES = 20;
 
-        int[] nums = new int[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 };
+        List<Integer> nums = Arrays.asList(new Integer[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 });
 
-        for (int i = 0; i < TIMES; i++) {
-            int idx1 = random.nextInt() % nums.length;
-            int idx2 = random.nextInt() % nums.length;
+        Collections.shuffle(nums, random);
 
-            int tmp = nums[idx1];
-            nums[idx1] = nums[idx2];
-            nums[idx2] = tmp;
-        }
-
-        for (int i = 0; i < nums.length; i++) {
-            switch (i) {
+        for (Integer n : nums) {
+            switch (n) {
                 case 1: deck.add(Card.GUARD_CARD);      break;
                 case 2: deck.add(Card.PRIST_CARD);      break;
                 case 3: deck.add(Card.LORD_CARD);       break;
@@ -111,16 +125,15 @@ public class Game {
     }
 
     private void giveCards() {
-        for (String id : players.keySet()) {
-            Player player = players.get(id);
+        for (Player player : activePlayers.values()) {
             player.addCard(deck.remove());
         }
     }
 
-    public boolean testMove(Move move) {
+    public boolean isValidMove(Move move) {
 
-        Player object = players.get(move.objectId);
-        Player subject = players.get(move.subjectId);
+        Player object = activePlayers.get(move.objectId);
+        Player subject = activePlayers.get(move.subjectId);
 
         switch (move.card) {
             case GUARD_CARD:
@@ -151,12 +164,13 @@ public class Game {
 
         cardsThatShouldBeShowed.clear();
 
-        Player object = players.get(move.objectId);
-        Player subject = players.get(move.subjectId);
+        Player object = activePlayers.get(move.objectId);
+        Player subject = activePlayers.get(move.subjectId);
 
 
         object.getHandCards().remove(move.card);
         object.getPlayedCards().add(move.card);
+        lastChange = new Pair<>(move.objectId, move.card);
 
         switch (move.card) {
 
@@ -194,7 +208,7 @@ public class Game {
 
             case PRINCE_CARD: // change
                 subject.getHandCards().clear();
-                subject.getHandCards().add(deck.poll()); // TODO: check maybe null
+                subject.getHandCards().add(deck.remove());
 
                 break;
 
@@ -216,34 +230,33 @@ public class Game {
                 break;
         }
 
-        if (deck.isEmpty()) {
+        if (deck.size() < 2 || activePlayers.size() == 1) {
             finished = true;
-        } else {
-/*
-            if (!currentPlayerI.hasNext()) {
-                if (players.isEmpty()) {
-                    finished = true;
-                } else {
-                    currentPlayerI = players.iterator();
-                    currentPlayer = currentPlayerI.next();
-                }
-            } else {
-                currentPlayer = currentPlayerI.next();
-            }*/
-            throw new UnsupportedOperationException();
         }
-
     }
 
-    public void next() {
+    public void giveCard(String id) {
+        activePlayers.get(id).addCard(deck.poll());
+    }
 
+    public boolean nextPlayer() {
+        if (deck.size() < 2 || activePlayers.size() == 1) {
+            return false;
+        }
+
+        do {
+            currentIdx = (currentIdx + 1) % players.length;
+        }
+        while (!isActivePlayer(players[currentIdx].getId()));
+
+        return true;
     }
 
     public boolean isFinished() {
         return finished;
     }
 
-    public void makeInactive(Player player) {
-        players.remove(player);
+    private void makeInactive(Player player) {
+        activePlayers.remove(player);
     }
 }

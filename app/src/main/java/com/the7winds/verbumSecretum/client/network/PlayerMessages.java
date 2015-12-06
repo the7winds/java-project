@@ -11,8 +11,6 @@ import com.the7winds.verbumSecretum.server.game.Game;
  */
 public class PlayerMessages {
 
-    public static final int LENGTH = 5;
-
     public static class Ready extends Message {
         // JSON fields consts
         public static final String HEAD = "Ready";

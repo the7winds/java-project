@@ -11,10 +11,11 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.the7winds.verbumSecretum.R;
-import com.the7winds.verbumSecretum.client.other.ClientData;
 import com.the7winds.verbumSecretum.client.network.ClientNetworkService;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
+import com.the7winds.verbumSecretum.client.other.ClientData;
 import com.the7winds.verbumSecretum.client.other.Events;
+import com.the7winds.verbumSecretum.server.game.Player;
 import com.the7winds.verbumSecretum.server.network.Server;
 import com.the7winds.verbumSecretum.server.network.ServerMessages;
 
@@ -22,7 +23,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -56,7 +57,7 @@ public class RoomActivity extends Activity {
         EventBus.getDefault().register(this);
 
         // setting up view
-        EventBus.getDefault().post(new Events.UpdateRoomEvent(Collections.<String, String>emptyMap()));
+        EventBus.getDefault().post(new ServerMessages.WaitingPlayersStatus(new Hashtable<String, Player>()));
 
         // starting server
         if (amIHotspot()) {
@@ -108,8 +109,8 @@ public class RoomActivity extends Activity {
 
     // subscribing
 
-    public void onEventMainThread(Events.UpdateRoomEvent event) {
-        Map<String, String> playersNames = event.playersNames;
+    public void onEventMainThread(ServerMessages.WaitingPlayersStatus waitingPlayersStatus) {
+        Map<String, String> playersNames = waitingPlayersStatus.getPlayersNames();
 
         Iterator<TextView> iterator = this.playersNames.iterator();
 
@@ -123,16 +124,18 @@ public class RoomActivity extends Activity {
             playerName.setText(R.string.empty_name);
         }
 
-        readyButton.setChecked(!playersNames.containsKey(ClientData.id));
+        readyButton.setChecked(playersNames.containsKey(ClientData.id));
         readyButton.setClickable(true);
     }
 
-    public void onEventMainThread(Events.Connected connected) {
+    public void onEventMainThread(ServerMessages.Connected connected) {
         readyButton.setClickable(true);
+        Toast.makeText(this, R.string.room_connected, Toast.LENGTH_SHORT).show();
     }
 
-    public void onEventMainThread(Events.StartGame startGame) {
+    public void onEventMainThread(ServerMessages.GameStarting gameStarting) {
         startActivity(new Intent().setClass(this, GameActivity.class));
+        finish();
     }
 
     public void onEventMainThread(ServerMessages.Disconnected disconnected) {
@@ -164,8 +167,7 @@ public class RoomActivity extends Activity {
     // posting
 
     public void onClickReady(View view) {
-        readyButton.setChecked(!readyButton.isChecked());
-        readyButton.setChecked(false);
+        readyButton.setClickable(false);
         if (readyButton.isChecked()) {
             EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Ready(ClientData.name)));
         } else {

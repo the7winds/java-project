@@ -7,7 +7,6 @@ import android.net.nsd.NsdServiceInfo;
 
 import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.other.Message;
-import com.the7winds.verbumSecretum.server.game.Game;
 import com.the7winds.verbumSecretum.server.game.Player;
 
 import java.io.IOException;
@@ -56,11 +55,7 @@ public class Server extends IntentService {
 
     private ServerSocket serverSocket;
 
-    private Game game;
-
     private Map<String, ConnectionHandler> allConnections = new Hashtable<>();
-
-    private WaitingPlayersHandler waitingPlayersHandler = new WaitingPlayersHandler(this, allConnections);
 
     public Server() {
         super(SERVICE_NAME);
@@ -76,20 +71,24 @@ public class Server extends IntentService {
 
             registerService();
 
+            WaitingPlayersHandler waitingPlayersHandler = new WaitingPlayersHandler(this, allConnections);
             Map<String, Player> players = waitingPlayersHandler.getPlayers();
+
+            GameHandler gameHandler = new GameHandler(this, players);
+            gameHandler.startGame();
 
             while (true) {
                 int a = 1;
             }
 
-         /*   closeNotPlayingConnections();
-            startGame();
+            // stopSelf();
+         /* startGame();
             playGame();
             finishGame();
             Terminate*/
         }
         catch (IOException e) {
-            unregisterNsd();
+            unregisterNsdManager();
             EventBus.getDefault().unregister(this);
             e.printStackTrace();
         }
@@ -123,10 +122,26 @@ public class Server extends IntentService {
     }
 
     public void onEvent(Events.StopServer stopServer) {
-        broadcast(new ServerMessages.Disconnected());
+        teminate();
+    }
 
-        for (ConnectionHandler handler : allConnections.values()) {
-            handler.close();
+    public void unregisterNsdManager() {
+        nsdManager.unregisterService(registrationListener);
+    }
+
+    public synchronized void addConnection(String id, ConnectionHandler connectionHandler) {
+        allConnections.put(id, connectionHandler);
+    }
+
+    public void disconnect(String id) {
+        sendTo(id, new ServerMessages.Disconnected());
+        ConnectionHandler handler = allConnections.remove(id);
+        handler.close();
+    }
+
+    public void teminate() {
+        for (String id : allConnections.keySet()) {
+            disconnect(id);
         }
 
         try {
@@ -137,14 +152,6 @@ public class Server extends IntentService {
 
         EventBus.getDefault().unregister(this);
         stopSelf();
-    }
-
-    public void unregisterNsd() {
-        nsdManager.unregisterService(registrationListener);
-    }
-
-    public synchronized void addConnection(String id, ConnectionHandler connectionHandler) {
-        allConnections.put(id, connectionHandler);
     }
 }
 

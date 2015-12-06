@@ -45,8 +45,14 @@ public class ConnectionHandler {
         }
     }
 
-    public static Queue<Pair<String, String>> getReceivedMessageQueue() {
-        return receivedMessageQueue;
+    public static Pair<String, String> popMessage() {
+        synchronized (receivedMessageQueue) {
+            if (!receivedMessageQueue.isEmpty()) {
+                return receivedMessageQueue.remove();
+            }
+        }
+
+        return null;
     }
 
     public void send(Message message) {
@@ -57,6 +63,10 @@ public class ConnectionHandler {
 
     public Connection getConnection() {
         return connection;
+    }
+
+    public String getId() {
+        return id;
     }
 
     private class SendTask implements Runnable {
