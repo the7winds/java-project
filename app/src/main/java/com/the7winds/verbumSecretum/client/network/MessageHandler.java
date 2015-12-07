@@ -16,6 +16,8 @@ import de.greenrobot.event.EventBus;
  */
 public class MessageHandler {
 
+    private boolean gameActivityInited = false;
+
     // handler
     public void onEvent(Events.ReceivedMessage receivedMessage) {
         String msg = receivedMessage.msg;
@@ -26,8 +28,11 @@ public class MessageHandler {
             case ServerMessages.GameOver.HEAD:
                 onGameOver(msg);
                 break;
+            case ServerMessages.Correct.HEAD:
+                onCorrect();
+                break;
             case ServerMessages.InvalidMove.HEAD:
-                onInvalidMoveMessage(msg);
+                onInvalidMoveMessage();
                 break;
             case ServerMessages.YourTurn.HEAD:
                 onYourTurnMessage(msg);
@@ -39,7 +44,7 @@ public class MessageHandler {
                 onStartMessage(msg);
                 break;
             case ServerMessages.GameStarting.HEAD:
-                onStartingMessage(msg);
+                onStartingMessage();
                 break;
             case ServerMessages.Disconnected.HEAD:
                 onDisconnected();
@@ -53,6 +58,14 @@ public class MessageHandler {
         }
     }
 
+    private void onCorrect() {
+        EventBus.getDefault().post(new ServerMessages.Correct());
+    }
+
+    public void onEvent(Events.GameActivityInited event) {
+        gameActivityInited = true;
+    }
+
     // Check
     private void onGameOver(String msg) {
         ServerMessages.GameOver message = new ServerMessages.GameOver();
@@ -61,7 +74,7 @@ public class MessageHandler {
         EventBus.getDefault().post(message);
     }
 
-    private void onInvalidMoveMessage(String msg) {
+    private void onInvalidMoveMessage() {
         EventBus.getDefault().post(new ServerMessages.InvalidMove());
     }
 
@@ -69,12 +82,16 @@ public class MessageHandler {
         ServerMessages.YourTurn message = new ServerMessages.YourTurn();
         message.deserialize(msg);
 
+        while (!gameActivityInited);
+
         EventBus.getDefault().post(message);
     }
 
     private void onGameStateMessage(String msg) {
         ServerMessages.GameState message = new ServerMessages.GameState();
         message.deserialize(msg);
+
+        while (!gameActivityInited);
 
         EventBus.getDefault().post(message);
     }
@@ -90,10 +107,12 @@ public class MessageHandler {
         ClientData.playersNames = new Hashtable<>(message.getIdToNames());
         ClientData.activePlayersNames = new Hashtable<>(message.getIdToNames());
 
+        while (!gameActivityInited);
+
         EventBus.getDefault().post(message);
     }
 
-    private void onStartingMessage(String msg) {
+    private void onStartingMessage() {
         EventBus.getDefault().post(new ServerMessages.GameStarting());
     }
 

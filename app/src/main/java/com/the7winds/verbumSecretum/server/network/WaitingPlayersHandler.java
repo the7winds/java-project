@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class WaitingPlayersHandler {
 
     private static final int MAX_PLAYERS_NUM = 4;
-    private static final int MIN_PLAYERS_NUM = 1;//TODO 2
+    private static final int MIN_PLAYERS_NUM = 2;//TODO 2
 
     private Server server;
 
@@ -47,7 +47,7 @@ public class WaitingPlayersHandler {
     }
 
     private void disconnectNotPlaying() {
-        server.unregisterNsdManager();
+        // server.unregisterNsdManager();
 
         for (String id : server.getAllId()) {
             if (!readyPlayers.containsKey(id)) {
@@ -108,7 +108,7 @@ public class WaitingPlayersHandler {
 
     private boolean onMessageReadyReceived(String id, PlayerMessages.Ready msg) {
         if (readyPlayers.size() < MAX_PLAYERS_NUM && !readyPlayers.containsKey(id)) {
-            readyPlayers.put(id, new Player(server.getConnectonHandler(id), msg.getName()));
+            readyPlayers.put(id, server.createPlayer(id, msg.getName()));
             return true;
         } else {
             return false;

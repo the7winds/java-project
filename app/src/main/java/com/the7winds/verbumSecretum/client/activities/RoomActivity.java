@@ -73,7 +73,8 @@ public class RoomActivity extends Activity {
     }
 
     @Override
-    protected void onPause() {
+    protected void onDestroy() {
+        super.onDestroy();
         super.onPause();
 
         if (ClientData.readyState == ClientData.ReadyState.READY) {
@@ -139,7 +140,6 @@ public class RoomActivity extends Activity {
 
     public void onEventMainThread(ServerMessages.GameStarting gameStarting) {
         startActivity(new Intent().setClass(this, GameActivity.class));
-        // finish();
     }
 
     public void onEventMainThread(ServerMessages.Disconnected disconnected) {

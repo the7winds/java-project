@@ -7,9 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.the7winds.verbumSecretum.R;
@@ -20,6 +20,8 @@ import com.the7winds.verbumSecretum.server.game.Game;
 import com.the7winds.verbumSecretum.server.network.ServerMessages;
 
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -35,38 +37,65 @@ public class GameActivity extends Activity {
     private Game.Move move;
 
     private ViewGroup handView;
+    private TextView infoTextView;
     private Map<String, AvaView> playersAvas = new Hashtable<>();
+    private Map<Game.Card, List<CardView>> handCardViews = new Hashtable<>();
 
     private FrameLayout frameLayout;
-    private TableLayout selector;
+    private HorizontalScrollView selector;
+
+    // consts
+    /*private DisplayMetrics displayMetrics = new DisplayMetrics();
+    private static int screenWidth;
+    private static int wTertia;*/
+    private static int wQuinta = 90;
+
+    /*private static int screenHeight;
+    private static int hTertia;*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        // TODO finishing parent Activity
+
+        /*getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        screenWidth = displayMetrics.widthPixels;
+        wTertia = screenWidth / 3;
+        wQuinta = screenWidth / 5;
+        screenHeight = displayMetrics.heightPixels;
+        hTertia = screenHeight / 3; */
+
         EventBus.getDefault().register(this);
         initSelector();
         frameLayout  = (FrameLayout) findViewById(R.id.game_frame);
+        infoTextView = (TextView) findViewById(R.id.game_info_text);
+
+        EventBus.getDefault().post(new Events.GameActivityInited());
     }
 
     private void initSelector() {
         LayoutInflater inflater = getLayoutInflater();
-        selector = (TableLayout) inflater.inflate(R.layout.choose_smth, null);
-        TableRow tableRow = (TableRow) selector.findViewWithTag(R.string.game_choose_row);
+        selector = (HorizontalScrollView) inflater.inflate(R.layout.choose_smth, null);
+        LinearLayout tableRow = (LinearLayout) selector.findViewWithTag(getString(R.string.game_choose_row));
 
         for (int i = 1; i < Game.Card.values().length; i++) {
-            tableRow.addView(new CardView(Game.Card.values()[i]));
+            CardView cardView = new CardView(Game.Card.values()[i]);
+            cardView.setPadding(10, 10, 10, 10);
+            tableRow.addView(cardView);
         }
     }
 
-    private class CardView extends ImageView {
+    private class CardView extends FrameLayout {
 
-        private Game.Card card;
-        private Drawable image;
+        private final Game.Card card;
+        private ImageView imageView;
 
         public CardView(final Game.Card card) {
             super(GameActivity.this);
+
             this.card = card;
+            Drawable image = null;
             switch (card) {
                 case GUARD_CARD:
                     image = getResources().getDrawable(R.drawable.c1);
@@ -94,9 +123,18 @@ public class GameActivity extends Activity {
                     break;
             }
 
-            setImageDrawable(image);
+            imageView = new ImageView(GameActivity.this);
+            imageView.setImageDrawable(image);
+            addView(imageView);
 
-            setOnClickListener(new OnClickHandler());
+            imageView.setLayoutParams(new LayoutParams(wQuinta, wQuinta));
+            imageView.setOnClickListener(new OnClickHandler());
+        }
+
+        @Override
+        public void setClickable(boolean clickable) {
+            super.setClickable(clickable);
+            imageView.setClickable(clickable);
         }
 
         private class OnClickHandler implements OnClickListener {
@@ -104,6 +142,7 @@ public class GameActivity extends Activity {
             public void onClick(View v) {
 
                 if (state == State.CARD_SELECT) {
+                    resetClickableHand();
                     move.card = card;
 
                     if (card == Game.Card.GUARD_CARD
@@ -127,7 +166,7 @@ public class GameActivity extends Activity {
                         state = State.WAITING_UPD;
                     }
                 } else if (state == State.ROLE_SELECT) {
-                    move.card = card;
+                    move.role = card;
                     frameLayout.removeView(selector);
                     EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Move(move)));
                     state = State.WAITING_UPD;
@@ -136,21 +175,22 @@ public class GameActivity extends Activity {
         }
     }
 
-    private class AvaView extends ImageView {
+    private class AvaView extends FrameLayout {
 
         private Drawable normal = getResources().getDrawable(R.drawable.normal);
         private Drawable active = getResources().getDrawable(R.drawable.active);
         private Drawable highlighted = getResources().getDrawable(R.drawable.highlighted);
         private Drawable inactive = getResources().getDrawable(R.drawable.inactive);
+        private ImageView imageView = new ImageView(GameActivity.this);
 
         public AvaView(final String id) {
             super(GameActivity.this);
             setNormal();
 
-            setOnClickListener(new OnClickListener() {
+            imageView.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    setClickable(false);
+                    resetAvas();
                     move.subjectId = id;
 
                     if (move.card == Game.Card.GUARD_CARD) {
@@ -162,22 +202,32 @@ public class GameActivity extends Activity {
                     }
                 }
             });
+
+            addView(imageView);
+            imageView.setLayoutParams(new LayoutParams(wQuinta, wQuinta));
+            setClickable(false);
+        }
+
+        @Override
+        public void setClickable(boolean clickable) {
+            super.setClickable(clickable);
+            imageView.setClickable(clickable);
         }
 
         public void setNormal() {
-            this.setImageDrawable(normal);
+            imageView.setImageDrawable(normal);
         }
 
         public void setActive() {
-            this.setImageDrawable(active);
+            imageView.setImageDrawable(active);
         }
 
         public void setHighlight() {
-            this.setImageDrawable(highlighted);
+            imageView.setImageDrawable(highlighted);
         }
 
         public void setInactive() {
-            this.setImageDrawable(inactive);
+            imageView.setImageDrawable(inactive);
         }
     }
 
@@ -215,7 +265,17 @@ public class GameActivity extends Activity {
         move = new Game.Move();
         move.objectId = ClientData.id;
 
-        handView.addView(new CardView(yourTurn.getCard()));
+        Game.Card card = yourTurn.getCard();
+        CardView cardView = new CardView(card);
+        handView.addView(cardView);
+
+        if (handCardViews.containsKey(card)) {
+            handCardViews.get(card).add(cardView);
+        } else {
+            List<CardView> list = new LinkedList<>();
+            list.add(cardView);
+            handCardViews.put(card, list);
+        }
 
         state = State.CARD_SELECT;
     }
@@ -233,11 +293,11 @@ public class GameActivity extends Activity {
             AvaView avaView = new AvaView(id);
             playersAvas.put(id, avaView);
             ((ViewGroup) playerView
-                    .findViewWithTag(R.string.game_ava_layout))
+                    .findViewWithTag(getString(R.string.game_ava_layout)))
                     .addView(avaView);
 
             ((TextView) playerView
-                    .findViewWithTag(R.string.game_player_name))
+                    .findViewWithTag(getString(R.string.game_player_name)))
                     .setText(ClientData.playersNames.get(id));
 
             gamePlayersRow.addView(playerView);
@@ -247,9 +307,41 @@ public class GameActivity extends Activity {
                 .addView(myAva = new AvaView(ClientData.id));
 
         ((TextView) findViewById(R.id.game_my_name))
-                .setText(ClientData.playersNames.get(ClientData.id));
+                .setText(ClientData.name);
 
         (handView = ((ViewGroup) findViewById(R.id.game_my_hand)))
                 .addView(new CardView((Game.Card) ClientData.hand.toArray()[0]));
+    }
+
+    public void onEventMainThread(ServerMessages.InvalidMove event) {
+        resetAvas();
+        infoTextView.setText(getString(R.string.game_invalid_move_message));
+    }
+
+    public void onEventMainThread(ServerMessages.Correct event) {
+        resetAvas();
+        handView.removeView(handCardViews.get(move.card).get(0));
+    }
+
+    private void resetAvas() {
+        myAva.setNormal();
+        for (AvaView ava : playersAvas.values()) {
+            ava.setNormal();
+        }
+    }
+
+    private void resetClickableAvas() {
+        myAva.setClickable(false);
+        for (AvaView ava : playersAvas.values()) {
+            ava.setClickable(false);
+        }
+    }
+
+    private void resetClickableHand() {
+        for (List<CardView> list : handCardViews.values()) {
+            for (CardView cardView : list) {
+                cardView.setClickable(false);
+            }
+        }
     }
 }

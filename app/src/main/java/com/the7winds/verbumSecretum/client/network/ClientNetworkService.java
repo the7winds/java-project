@@ -124,7 +124,7 @@ public class ClientNetworkService extends IntentService {
             Connection connection = new Connection(server, port);
             connectionHandler = new ConnectionHandler(connection);
 
-            nsdManager.stopServiceDiscovery(discoveryListener);
+//            nsdManager.stopServiceDiscovery(discoveryListener);
 
             executor.submit(connectionHandler);
 
@@ -141,7 +141,7 @@ public class ClientNetworkService extends IntentService {
         EventBus.getDefault().unregister(messageHandler);
         EventBus.getDefault().unregister(this);
 
-        nsdManager.stopServiceDiscovery(discoveryListener);
+        // nsdManager.stopServiceDiscovery(discoveryListener);
         executor.shutdownNow();
 
         stopSelf();

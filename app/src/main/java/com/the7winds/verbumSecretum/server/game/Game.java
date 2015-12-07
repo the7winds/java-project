@@ -97,7 +97,9 @@ public class Game {
     public Game(Map<String, Player> allPlayers) {
         activePlayers = allPlayers;
         players = allPlayers.values().toArray(new Player[allPlayers.size()]);
-        currentIdx = random.nextInt();
+
+        currentIdx = random.nextInt() % players.length;
+        // nextPlayer();
 
         initDec();
         giveCards();
@@ -138,11 +140,11 @@ public class Game {
         switch (move.card) {
             case GUARD_CARD:
                 return (move.role != Card.GUARD_CARD
-                        && object.getPlayedCards().element() != Card.STAFF_CARD);
+                        && (object.getPlayedCards().isEmpty() || object.getPlayedCards().element() != Card.STAFF_CARD));
             case PRIST_CARD:
-                return (object.getPlayedCards().element() != Card.STAFF_CARD);
+                return (object.getPlayedCards().isEmpty() || object.getPlayedCards().element() != Card.STAFF_CARD);
             case LORD_CARD:
-                return (object.getPlayedCards().element() != Card.STAFF_CARD);
+                return (object.getPlayedCards().isEmpty() || object.getPlayedCards().element() != Card.STAFF_CARD);
             case STAFF_CARD:
                 return true;
             case PRINCE_CARD:
@@ -150,7 +152,7 @@ public class Game {
                         (object == subject || object.getPlayedCards().element() != Card.STAFF_CARD));
             case KING_CARD:
                 return (!object.getHandCards().contains(Card.COUNTESS_CARD) &&
-                        object.getPlayedCards().element() != Card.STAFF_CARD);
+                        (object.getPlayedCards().isEmpty() || object.getPlayedCards().element() != Card.STAFF_CARD));
             case COUNTESS_CARD:
                 return true;
             case PRINCESS_CARD:

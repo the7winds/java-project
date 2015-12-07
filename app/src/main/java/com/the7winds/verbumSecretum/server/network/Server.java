@@ -135,7 +135,7 @@ public class Server extends IntentService {
         allConnections.put(id, connectionHandler);
     }
 
-    public void disconnect(String id) {
+    public synchronized void disconnect(String id) {
         sendTo(id, new ServerMessages.Disconnected());
         ConnectionHandler handler = allConnections.remove(id);
         handler.close();
@@ -156,12 +156,12 @@ public class Server extends IntentService {
         stopSelf();
     }
 
-    public ConnectionHandler getConnectonHandler(String id) {
-        return allConnections.get(id);
-    }
-
     public Set<String> getAllId() {
         return allConnections.keySet();
+    }
+
+    public synchronized Player createPlayer(String id, String name) {
+        return new Player(allConnections.get(id), name);
     }
 }
 

@@ -39,6 +39,8 @@ public class GameHandler {
     }
 
     private void playGame() {
+        server.sendTo(game.getCurrent(), new ServerMessages.YourTurn(game.getTopCard()));
+
         while (!game.isFinished()) {
             Pair<String, String> idMsg = ConnectionHandler.popMessage();
 
@@ -74,6 +76,7 @@ public class GameHandler {
 
         if (game.isValidMove(move)) {
             game.applyMove(move);
+            server.sendTo(id, new ServerMessages.Correct());
             if (game.nextPlayer()) {
                 server.broadcast(new ServerMessages.GameState(game.getCurrent(),
                         game.getLastChange(),

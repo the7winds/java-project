@@ -39,5 +39,6 @@
     <string name="game_player_name">player_name</string>
     <string name="game_played_cards">played_cards</string>
     <string name="game_choose_row">choose</string>
+    <string name="game_invalid_move_message">invalide move</string>
 
 </resources>

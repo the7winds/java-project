@@ -11,6 +11,9 @@ import java.util.Map;
  */
 public class Events {
 
+    public static class GameActivityInited {
+    }
+
     public static class ReceivedMessage {
         public ReceivedMessage(String message) {
             this.msg = message;

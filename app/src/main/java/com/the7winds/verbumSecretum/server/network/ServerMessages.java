@@ -443,4 +443,12 @@ public class ServerMessages {
             return this;
         }
     }
+
+    public static class Correct extends Message {
+        public static final String HEAD = "Correct";
+
+        public Correct() {
+            super(HEAD);
+        }
+    }
 }
