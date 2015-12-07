@@ -12,9 +12,9 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by the7winds on 05.12.15.
@@ -22,19 +22,17 @@ import java.util.concurrent.Executors;
 public class WaitingPlayersHandler {
 
     private static final int MAX_PLAYERS_NUM = 4;
-    private static final int MIN_PLAYERS_NUM = 2;
+    private static final int MIN_PLAYERS_NUM = 1;//TODO 2
 
     private Server server;
 
     private ExecutorService acceptorExecutorService = Executors.newSingleThreadExecutor();
-    private ExecutorService timeChangesExecutorService = Executors.newSingleThreadExecutor();
+    private TimeChanges timeChanges;
 
-    private Map<String, ConnectionHandler> allConnections;
     private Map<String, Player> readyPlayers;
 
 
     public WaitingPlayersHandler(Server server, Map<String, ConnectionHandler> allConnections) {
-        this.allConnections = allConnections;
         this.readyPlayers = new Hashtable<>();
         this.server = server;
     }
@@ -51,27 +49,25 @@ public class WaitingPlayersHandler {
     private void disconnectNotPlaying() {
         server.unregisterNsdManager();
 
-        Set<String> notPlaying = allConnections.keySet();
-        notPlaying.removeAll(readyPlayers.keySet());
-
-        for (String id : notPlaying) {
-            server.disconnect(id);
+        for (String id : server.getAllId()) {
+            if (!readyPlayers.containsKey(id)) {
+                server.disconnect(id);
+            }
         }
     }
 
     private void waitPlayers() {
-        timeChangesExecutorService.submit(new TimeChanges());
+        timeChanges = new TimeChanges();
+        timeChanges.start();
 
-        while (!timeChangesExecutorService.isTerminated()) {
+        while (timeChanges.isAlive()) {
             boolean broadcastFlag = false;
             boolean timeFlag = false;
 
             broadcastFlag = onMessageReceived();
             timeFlag = broadcastFlag | (readyPlayers.size() < MIN_PLAYERS_NUM);
             if (timeFlag) {
-                timeChangesExecutorService.shutdownNow();
-                timeChangesExecutorService = Executors.newSingleThreadExecutor();
-                timeChangesExecutorService.submit(new TimeChanges());
+                timeChanges.timeFlagUp();
             }
             if (broadcastFlag) {
                 server.broadcast(new ServerMessages.WaitingPlayersStatus(readyPlayers));
@@ -112,8 +108,7 @@ public class WaitingPlayersHandler {
 
     private boolean onMessageReadyReceived(String id, PlayerMessages.Ready msg) {
         if (readyPlayers.size() < MAX_PLAYERS_NUM && !readyPlayers.containsKey(id)) {
-            ConnectionHandler connectionHandler = allConnections.get(id);
-            readyPlayers.put(id, new Player(connectionHandler, msg.getName()));
+            readyPlayers.put(id, new Player(server.getConnectonHandler(id), msg.getName()));
             return true;
         } else {
             return false;
@@ -164,15 +159,23 @@ public class WaitingPlayersHandler {
         }
     }
 
-    private class TimeChanges implements Runnable {
-        private int delay = 10000;
+    private class TimeChanges extends Thread {
+        private static final int delay = 3000;
+        private AtomicBoolean timeFlag = new AtomicBoolean(true);
 
         @Override
         public void run() {
             try {
-                Thread.sleep(delay);
+                while (timeFlag.get()) {
+                    timeFlag.set(false);
+                    Thread.sleep(delay);
+                }
             } catch (InterruptedException ignored) {
             }
+        }
+
+        public void timeFlagUp() {
+            timeFlag.set(true);
         }
     }
 }

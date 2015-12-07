@@ -96,7 +96,7 @@ public class Game {
 
     public Game(Map<String, Player> allPlayers) {
         activePlayers = allPlayers;
-        players = (Player[]) allPlayers.values().toArray();
+        players = allPlayers.values().toArray(new Player[allPlayers.size()]);
         currentIdx = random.nextInt();
 
         initDec();

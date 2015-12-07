@@ -3,6 +3,7 @@ package com.the7winds.verbumSecretum.server.game;
 import com.the7winds.verbumSecretum.server.network.ConnectionHandler;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Queue;
 
 /**
@@ -13,8 +14,8 @@ public class Player {
     private String name;
     private ConnectionHandler connection;
 
-    private Collection<Game.Card> handCards;
-    private Queue<Game.Card> playedCards;
+    private Collection<Game.Card> handCards = new LinkedList<>();
+    private Queue<Game.Card> playedCards = new LinkedList<>();
 
     public Player(ConnectionHandler connection, String name) {
         this.connection = connection;

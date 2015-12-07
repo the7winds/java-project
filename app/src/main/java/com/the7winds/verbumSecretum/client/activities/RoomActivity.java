@@ -57,7 +57,11 @@ public class RoomActivity extends Activity {
         EventBus.getDefault().register(this);
 
         // setting up view
-        EventBus.getDefault().post(new ServerMessages.WaitingPlayersStatus(new Hashtable<String, Player>()));
+        Iterator<TextView> iterator = this.playersNames.iterator();
+        while (iterator.hasNext()) {
+            TextView playerName = iterator.next();
+            playerName.setText(R.string.empty_name);
+        }
 
         // starting server
         if (amIHotspot()) {
@@ -135,7 +139,7 @@ public class RoomActivity extends Activity {
 
     public void onEventMainThread(ServerMessages.GameStarting gameStarting) {
         startActivity(new Intent().setClass(this, GameActivity.class));
-        finish();
+        // finish();
     }
 
     public void onEventMainThread(ServerMessages.Disconnected disconnected) {

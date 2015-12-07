@@ -14,6 +14,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 
 import de.greenrobot.event.EventBus;
 
@@ -56,6 +57,7 @@ public class Server extends IntentService {
     private ServerSocket serverSocket;
 
     private Map<String, ConnectionHandler> allConnections = new Hashtable<>();
+    private Set<String> allId;
 
     public Server() {
         super(SERVICE_NAME);
@@ -152,6 +154,14 @@ public class Server extends IntentService {
 
         EventBus.getDefault().unregister(this);
         stopSelf();
+    }
+
+    public ConnectionHandler getConnectonHandler(String id) {
+        return allConnections.get(id);
+    }
+
+    public Set<String> getAllId() {
+        return allConnections.keySet();
     }
 }
 

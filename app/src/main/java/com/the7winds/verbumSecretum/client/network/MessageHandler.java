@@ -94,9 +94,7 @@ public class MessageHandler {
     }
 
     private void onStartingMessage(String msg) {
-        ServerMessages.GameStart message = new ServerMessages.GameStart();
-        message.deserialize(msg);
-        EventBus.getDefault().post(message);
+        EventBus.getDefault().post(new ServerMessages.GameStarting());
     }
 
     private void onWaitingStatusMessage(String msg) {

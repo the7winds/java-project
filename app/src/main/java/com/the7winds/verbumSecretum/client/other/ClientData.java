@@ -13,8 +13,7 @@ import java.util.Map;
 public class ClientData {
     public static String id;
     public static Map<String, String> playersNames;
-    public static Map<String, LinkedList<Game.Card>> playerPlayedCards;
-    public static Collection<Game.Card> hand;
+    public static Collection<Game.Card> hand = new LinkedList<>();
     public static String name;
     public static Hashtable<String, String> activePlayersNames;
 

@@ -220,7 +220,7 @@ public class GameActivity extends Activity {
         state = State.CARD_SELECT;
     }
 
-    public void onEventMainThread(ServerMessages.GameStart startGame) {
+    public void onEventMainThread(ServerMessages.GameStart gameStart) {
         LayoutInflater layoutInflater = getLayoutInflater();
         ViewGroup gamePlayersRow = (ViewGroup) findViewById(R.id.game_players_row);
 
