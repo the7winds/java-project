@@ -79,15 +79,7 @@ public class Server extends IntentService {
             GameHandler gameHandler = new GameHandler(this, players);
             gameHandler.startGame();
 
-            while (true) {
-                int a = 1;
-            }
-
-            // stopSelf();
-         /* startGame();
-            playGame();
-            finishGame();
-            Terminate*/
+            while (true);
         }
         catch (IOException e) {
             unregisterNsdManager();
@@ -135,18 +127,17 @@ public class Server extends IntentService {
         allConnections.put(id, connectionHandler);
     }
 
-    public synchronized void disconnect(String id) {
+    public synchronized void disconnect(String id) throws IOException {
         sendTo(id, new ServerMessages.Disconnected());
         ConnectionHandler handler = allConnections.remove(id);
         handler.close();
     }
 
     public void teminate() {
-        for (String id : allConnections.keySet()) {
-            disconnect(id);
-        }
-
         try {
+            for (String id : allConnections.keySet()) {
+                disconnect(id);
+            }
             serverSocket.close();
         } catch (IOException e) {
             e.printStackTrace();

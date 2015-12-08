@@ -136,8 +136,15 @@ public class ServerMessages {
         private static final String IDS_FIELD = "ids";
         private static final String NAMES_FIELD = "names";
         private static final String CARDS_FIELD = "cards";
+        private static final String FIRST_FIELD = "first";
 
-        private Map<String, String> idToNames = new Hashtable<>();
+        private final Map<String, String> idToNames = new Hashtable<>();
+        private final Map<String, Game.Card> idToCard = new Hashtable<>();
+        private String first;
+
+        public String getFirst() {
+            return first;
+        }
 
         public Map<String, String> getIdToNames() {
             return idToNames;
@@ -147,18 +154,18 @@ public class ServerMessages {
             return idToCard;
         }
 
-        private Map<String, Game.Card> idToCard = new Hashtable<>();
-
         public GameStart() {
             super(HEAD);
         }
 
-        public GameStart(Map<String, Player> players) {
+        public GameStart(Map<String, Player> players, String first) {
             super(HEAD);
             for (String id : players.keySet()) {
                 idToNames.put(id, players.get(id).getName());
                 idToCard.put(id, players.get(id).getHandCard());
             }
+
+            this.first = first;
         }
 
         @Override
@@ -178,6 +185,7 @@ public class ServerMessages {
             gameStart.add(IDS_FIELD, ids);
             gameStart.add(NAMES_FIELD, names);
             gameStart.add(CARDS_FIELD, cards);
+            gameStart.addProperty(FIRST_FIELD, first);
 
             return new Gson().toJson(gameStart);
         }
@@ -198,6 +206,8 @@ public class ServerMessages {
                 idToNames.put(id, name);
                 idToCard.put(id, card);
             }
+
+            first = jsonObject.get(FIRST_FIELD).getAsString();
 
             return this;
         }
@@ -220,13 +230,19 @@ public class ServerMessages {
         private static final String CARDS_THAT_SHOULD_BE_SHOWED_CARDS_FIELD = "cards_that_should_be_showed_cards";
         private static final String CURRENT_FIELD = "current";
         private static final String ACTIVE_PLAYERS_ID_FIELD = "active_players_id";
+        private static final String ACTIVE_PLAYERS_HAND_FIELD = "active_hand";
 
 
         // fields
         private Pair<String, Game.Card> newPlayedCard;
         private Map<String, Game.Card> cardsThatShouldBeShowed = new Hashtable<>();
         private String current;
-        private Set<String> activePlayersId = new LinkedHashSet<>();
+
+        public Map<String, Game.Card> getActivePlayersIdHandCard() {
+            return activePlayersIdHandCard;
+        }
+
+        private Map<String, Game.Card> activePlayersIdHandCard = new Hashtable<>();
 
         public Pair<String, Game.Card> getNewPlayedCard() {
             return newPlayedCard;
@@ -240,10 +256,6 @@ public class ServerMessages {
             return current;
         }
 
-        public Set<String> getActivePlayersId() {
-            return activePlayersId;
-        }
-
         public GameState() {
             super(HEAD);
         }
@@ -251,13 +263,15 @@ public class ServerMessages {
         public GameState(String current
                          , Pair<String, Game.Card> newPlayedCard
                          , Map<String, Game.Card> cardsThatShouldBeShowed
-                         , Set<String> activePlayersId) {
+                         , Map<String, Player> activePlayersId) {
             super(HEAD);
 
             this.current = current;
             this.newPlayedCard = newPlayedCard;
             this.cardsThatShouldBeShowed = cardsThatShouldBeShowed;
-            this.activePlayersId = activePlayersId;
+            for (String id : activePlayersId.keySet()) {
+                activePlayersIdHandCard.put(id, activePlayersId.get(id).getHandCard());
+            }
         }
 
         @Override
@@ -281,11 +295,14 @@ public class ServerMessages {
             gameData.add(CARDS_THAT_SHOULD_BE_SHOWED_CARDS_FIELD, cards);
 
             JsonArray activeIds = new JsonArray();
-            for (String id : activePlayersId) {
+            JsonArray activeHand = new JsonArray();
+            for (String id : activePlayersIdHandCard.keySet()) {
                 activeIds.add(id);
+                activeHand.add(activePlayersIdHandCard.get(id).toString());
             }
 
             gameData.add(ACTIVE_PLAYERS_ID_FIELD, activeIds);
+            gameData.add(ACTIVE_PLAYERS_HAND_FIELD, activeHand);
 
             return new Gson().toJson(gameData);
         }
@@ -310,9 +327,12 @@ public class ServerMessages {
             }
 
             JsonArray activeIds = jsonObject.get(ACTIVE_PLAYERS_ID_FIELD).getAsJsonArray();
+            JsonArray activeHand = jsonObject.get(ACTIVE_PLAYERS_HAND_FIELD).getAsJsonArray();
 
             for (int i = 0; i < activeIds.size(); i++) {
-                activePlayersId.add(activeIds.get(i).getAsString());
+                String id = activeIds.get(i).getAsString();
+                Game.Card card = Game.Card.valueOf(activeHand.get(i).getAsString());
+                activePlayersIdHandCard.put(id, card);
             }
 
             return this;

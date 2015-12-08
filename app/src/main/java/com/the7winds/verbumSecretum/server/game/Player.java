@@ -35,7 +35,7 @@ public class Player {
     }
 
     public Game.Card getHandCard() {
-        return (handCards.isEmpty() ? null : handCards.iterator().next());
+        return (handCards.isEmpty() ? null : (Game.Card) handCards.toArray()[0]);
     }
 
     public void addCard(Game.Card card) {

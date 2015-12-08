@@ -97,10 +97,10 @@ public class PlayerMessages {
         public String serialize() {
             JsonObject moveMsg = getBaseJsonObject();
 
-            moveMsg.addProperty(SUBJECT_ID_FIELD, move.objectId);
-            moveMsg.addProperty(CARD_FIELD, move.card.name());
             moveMsg.addProperty(OBJECT_ID_FIELD, move.objectId);
-            moveMsg.addProperty(ROLE_FIELD, move.card.name());
+            moveMsg.addProperty(CARD_FIELD, move.card.name());
+            moveMsg.addProperty(SUBJECT_ID_FIELD, move.subjectId);
+            moveMsg.addProperty(ROLE_FIELD, move.role.name());
 
             return new Gson().toJson(moveMsg);
         }

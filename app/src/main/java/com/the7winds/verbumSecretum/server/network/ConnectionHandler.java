@@ -16,33 +16,28 @@ import java.util.concurrent.Executors;
  */
 public class ConnectionHandler {
 
-    private final int TIMEOUT = 100;
+    private final static int TIMEOUT = 100;
     private final String id;
     private final Connection connection;
 
     private final Queue<Message> sendMessageQueue = new LinkedList<>();
     private static final Queue<Pair<String, String>> receivedMessageQueue = new LinkedList<>();
 
-    ExecutorService executor = Executors.newFixedThreadPool(2);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     public ConnectionHandler(String id, Connection connection) {
         this.id = id;
         this.connection = connection;
-        send(new ServerMessages.Connected(id));
     }
 
     public void open() {
-        executor.execute(new SendTask());
-        executor.execute(new ReceiveTask());
+        executorService.execute(new SendTask());
+        executorService.execute(new ReceiveTask());
     }
 
-    public void close() {
-        executor.shutdownNow();
-        try {
-            connection.close();
-        } catch (IOException ignored) {
-            // TODO
-        }
+    public void close() throws IOException {
+        executorService.shutdownNow();
+        connection.close();
     }
 
     public static Pair<String, String> popMessage() {
@@ -73,11 +68,15 @@ public class ConnectionHandler {
         @Override
         public void run() {
             while (!connection.isClosed() && !Thread.interrupted()) {
-                if (!sendMessageQueue.isEmpty()) {
-                    Message message;
-                    synchronized (sendMessageQueue) {
+                Message message = null;
+
+                synchronized (sendMessageQueue) {
+                    if (!sendMessageQueue.isEmpty()) {
                         message = sendMessageQueue.remove();
                     }
+                }
+
+                if (message != null) {
                     connection.send(message.serialize());
                 }
             }

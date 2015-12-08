@@ -2,9 +2,10 @@ package com.the7winds.verbumSecretum.server.game;
 
 import android.util.Pair;
 
+import com.the7winds.verbumSecretum.server.network.ServerMessages;
+
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,11 +30,7 @@ public class Game {
 
     private Map<String, Card> cardsThatShouldBeShowed = new Hashtable<>();
 
-    Random random = new Random();
-
-    public Pair<String, Card> getLastChange() {
-        return lastChange;
-    }
+    private Random random = new Random();
 
     private Pair<String, Card> lastChange;
 
@@ -41,7 +38,7 @@ public class Game {
         return activePlayers;
     }
 
-    public String getCurrent() {
+    public String getCurrentPlayerId() {
         return players[currentIdx].getId();
     }
 
@@ -68,14 +65,6 @@ public class Game {
         }
     }
 
-    public Map<String,Card> getCardsThatShouldBeShowed() {
-        return cardsThatShouldBeShowed;
-    }
-
-    public Card getTopCard() {
-        return deck.remove();
-    }
-
     public enum Card {
         GUARD_CARD,
         PRIST_CARD,
@@ -98,19 +87,17 @@ public class Game {
         activePlayers = allPlayers;
         players = allPlayers.values().toArray(new Player[allPlayers.size()]);
 
-        currentIdx = random.nextInt() % players.length;
+        currentIdx = Math.abs(random.nextInt()) % players.length;
         // nextPlayer();
 
         initDec();
         giveCards();
     }
 
-    public void initDec() {
-        final int TIMES = 20;
-
+    private void initDec() {
         List<Integer> nums = Arrays.asList(new Integer[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 });
 
-        Collections.shuffle(nums, random);
+        // Collections.shuffle(nums, random);
 
         for (Integer n : nums) {
             switch (n) {
@@ -139,20 +126,20 @@ public class Game {
 
         switch (move.card) {
             case GUARD_CARD:
-                return (move.role != Card.GUARD_CARD
-                        && (object.getPlayedCards().isEmpty() || object.getPlayedCards().element() != Card.STAFF_CARD));
+                return cantMove(move.objectId) || (move.role != Card.GUARD_CARD
+                        && (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD));
             case PRIST_CARD:
-                return (object.getPlayedCards().isEmpty() || object.getPlayedCards().element() != Card.STAFF_CARD);
+                return cantMove(move.objectId) || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD);
             case LORD_CARD:
-                return (object.getPlayedCards().isEmpty() || object.getPlayedCards().element() != Card.STAFF_CARD);
+                return cantMove(move.objectId) || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD);
             case STAFF_CARD:
                 return true;
             case PRINCE_CARD:
                 return (!object.getHandCards().contains(Card.COUNTESS_CARD) &&
-                        (object == subject || object.getPlayedCards().element() != Card.STAFF_CARD));
+                        (object == subject || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD)));
             case KING_CARD:
-                return (!object.getHandCards().contains(Card.COUNTESS_CARD) &&
-                        (object.getPlayedCards().isEmpty() || object.getPlayedCards().element() != Card.STAFF_CARD));
+                return cantMove(move.objectId) || (!object.getHandCards().contains(Card.COUNTESS_CARD) &&
+                        (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD));
             case COUNTESS_CARD:
                 return true;
             case PRINCESS_CARD:
@@ -162,13 +149,20 @@ public class Game {
         return false;
     }
 
-    public void applyMove(Move move) {
+    private boolean cantMove(String objectId) {
+        for (Map.Entry<String, Player> entry : activePlayers.entrySet()) {
+            if (!entry.getKey().equals(objectId) && !entry.getValue().getPlayedCards().contains(Card.STAFF_CARD)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+    public void applyMove(Move move) {
         cardsThatShouldBeShowed.clear();
 
         Player object = activePlayers.get(move.objectId);
         Player subject = activePlayers.get(move.subjectId);
-
 
         object.getHandCards().remove(move.card);
         object.getPlayedCards().add(move.card);
@@ -177,18 +171,25 @@ public class Game {
         switch (move.card) {
 
             case GUARD_CARD: // try
-                if (object.getHandCards().contains(move.role)) {
+                if (cantMove(move.objectId)) {
+                    break;
+                }
+                if (subject.getHandCards().contains(move.role)) {
                     makeInactive(object);
                 }
-
                 break;
 
             case PRIST_CARD: // show
-                cardsThatShouldBeShowed.put(move.subjectId, object.getHandCard());
-
+                if (cantMove(move.objectId)) {
+                    break;
+                }
+                cardsThatShouldBeShowed.put(move.objectId, subject.getHandCard());
                 break;
 
             case LORD_CARD: // compare cards
+                if (cantMove(move.objectId)) {
+                    break;
+                }
                 Card subjectsCard = subject.getHandCard();
                 Card objectsCard = object.getHandCard();
 
@@ -211,15 +212,16 @@ public class Game {
             case PRINCE_CARD: // change
                 subject.getHandCards().clear();
                 subject.getHandCards().add(deck.remove());
-
                 break;
 
             case KING_CARD: // swap
+                if (cantMove(move.objectId)) {
+                    break;
+                }
                 Collection<Card> tmp = object.getHandCards();
                 object.getHandCards().addAll(subject.getHandCards());
                 subject.getHandCards().clear();
                 subject.getHandCards().addAll(tmp);
-
                 break;
 
             case COUNTESS_CARD: // nothing
@@ -228,7 +230,6 @@ public class Game {
             case PRINCESS_CARD: // game over
                 makeInactive(subject);
                 finished = true;
-
                 break;
         }
 
@@ -237,12 +238,9 @@ public class Game {
         }
     }
 
-    public void giveCard(String id) {
-        activePlayers.get(id).addCard(deck.poll());
-    }
-
     public boolean nextPlayer() {
         if (deck.size() < 2 || activePlayers.size() == 1) {
+            finished = true;
             return false;
         }
 
@@ -260,5 +258,18 @@ public class Game {
 
     private void makeInactive(Player player) {
         activePlayers.remove(player);
+    }
+
+    public ServerMessages.GameState genGameStateMessage() {
+        return new ServerMessages.GameState(players[currentIdx].getId()
+                , lastChange
+                , cardsThatShouldBeShowed
+                , activePlayers);
+    }
+
+    public ServerMessages.YourTurn genYourTurnMessage() {
+        Card card = deck.remove();
+        players[currentIdx].addCard(card);
+        return new ServerMessages.YourTurn(card);
     }
 }

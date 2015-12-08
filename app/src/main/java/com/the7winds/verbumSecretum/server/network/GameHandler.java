@@ -8,6 +8,7 @@ import com.the7winds.verbumSecretum.client.network.PlayerMessages;
 import com.the7winds.verbumSecretum.server.game.Game;
 import com.the7winds.verbumSecretum.server.game.Player;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -29,7 +30,7 @@ public class GameHandler {
 
         game = new Game(players);
 
-        server.broadcast(new ServerMessages.GameStart(game.getActivePlayers()));
+        server.broadcast(new ServerMessages.GameStart(game.getActivePlayers(), game.getCurrentPlayerId()));
 
         playGame();
 
@@ -39,7 +40,7 @@ public class GameHandler {
     }
 
     private void playGame() {
-        server.sendTo(game.getCurrent(), new ServerMessages.YourTurn(game.getTopCard()));
+        server.sendTo(game.getCurrentPlayerId(), game.genYourTurnMessage());
 
         while (!game.isFinished()) {
             Pair<String, String> idMsg = ConnectionHandler.popMessage();
@@ -78,11 +79,8 @@ public class GameHandler {
             game.applyMove(move);
             server.sendTo(id, new ServerMessages.Correct());
             if (game.nextPlayer()) {
-                server.broadcast(new ServerMessages.GameState(game.getCurrent(),
-                        game.getLastChange(),
-                        game.getCardsThatShouldBeShowed(),
-                        game.getActivePlayers().keySet()));
-                server.sendTo(id, new ServerMessages.YourTurn(game.getTopCard()));
+                server.broadcast(game.genGameStateMessage());
+                server.sendTo(game.getCurrentPlayerId(), game.genYourTurnMessage());
             }
         } else {
             server.sendTo(id, new ServerMessages.InvalidMove());
@@ -93,7 +91,11 @@ public class GameHandler {
         if (game.isActivePlayer(id)) {
             server.teminate();
         } else {
-            server.disconnect(id);
+            try {
+                server.disconnect(id);
+            } catch (IOException ignored) {
+
+            }
         }
     }
 }

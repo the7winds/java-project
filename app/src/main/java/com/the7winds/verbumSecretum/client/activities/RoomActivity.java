@@ -2,7 +2,6 @@ package com.the7winds.verbumSecretum.client.activities;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,16 +13,12 @@ import com.the7winds.verbumSecretum.R;
 import com.the7winds.verbumSecretum.client.network.ClientNetworkService;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
 import com.the7winds.verbumSecretum.client.other.ClientData;
+import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.other.Events;
-import com.the7winds.verbumSecretum.server.game.Player;
 import com.the7winds.verbumSecretum.server.network.Server;
 import com.the7winds.verbumSecretum.server.network.ServerMessages;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -57,14 +52,12 @@ public class RoomActivity extends Activity {
         EventBus.getDefault().register(this);
 
         // setting up view
-        Iterator<TextView> iterator = this.playersNames.iterator();
-        while (iterator.hasNext()) {
-            TextView playerName = iterator.next();
-            playerName.setText(R.string.empty_name);
+        for (TextView playerName : playersNames) {
+            playerName.setText(R.string.room_empty_name);
         }
 
         // starting server
-        if (amIHotspot()) {
+        if (ClientUtils.amIHotspot(this)) {
             startService(new Intent(this, Server.class));
         }
 
@@ -73,49 +66,20 @@ public class RoomActivity extends Activity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
         super.onPause();
 
-        if (ClientData.readyState == ClientData.ReadyState.READY) {
-            EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Leave()));
+        EventBus.getDefault().unregister(this);
+
+        if (!isFinishing()) { // TODO check life cycle
+            EventBus.getDefault().post(new Events.StopClientService());
         }
-
-        if (amIHotspot()) {
-            EventBus.getDefault().post(new Events.StopServer());
-        }
-
-        EventBus.getDefault().post(new Events.StopClientService());
-
-        finish();
-    }
-
-    private boolean amIHotspot() {
-        try {
-            WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-            Method method = wifiManager.getClass().getDeclaredMethod("getWifiApState");
-            method.setAccessible(true);
-
-            int actualState = (Integer) method.invoke(wifiManager, (Object[]) null);
-            Field fField = wifiManager.getClass().getField("WIFI_AP_STATE_ENABLED");
-            int hotspotEnabled = (Integer) fField.get(fField);
-
-            if (actualState == hotspotEnabled) {
-                return true;
-            }
-
-        } catch (InvocationTargetException | NoSuchMethodException
-                | IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-
-        return false;
     }
 
     // subscribing
 
-    public void onEventMainThread(ServerMessages.WaitingPlayersStatus waitingPlayersStatus) {
-        Map<String, String> playersNames = waitingPlayersStatus.getPlayersNames();
+    public void onEventMainThread(ServerMessages.WaitingPlayersStatus event) {
+        Map<String, String> playersNames = event.getPlayersNames();
 
         Iterator<TextView> iterator = this.playersNames.iterator();
 
@@ -126,45 +90,38 @@ public class RoomActivity extends Activity {
 
         while (iterator.hasNext()) {
             TextView playerName = iterator.next();
-            playerName.setText(R.string.empty_name);
+            playerName.setText(R.string.room_empty_name);
         }
 
         readyButton.setChecked(playersNames.containsKey(ClientData.id));
         readyButton.setClickable(true);
     }
 
-    public void onEventMainThread(ServerMessages.Connected connected) {
+    public void onEventMainThread(ServerMessages.Connected event) {
         readyButton.setClickable(true);
         Toast.makeText(this, R.string.room_connected, Toast.LENGTH_SHORT).show();
     }
 
-    public void onEventMainThread(ServerMessages.GameStarting gameStarting) {
+    public void onEventMainThread(ServerMessages.GameStarting event) {
         startActivity(new Intent().setClass(this, GameActivity.class));
-    }
-
-    public void onEventMainThread(ServerMessages.Disconnected disconnected) {
         finish();
     }
 
-    public void onEventMainThread(Events.ClientServiceError clientServiceError) {
-        Toast.makeText(this, R.string.common_error_message, Toast.LENGTH_SHORT).show();
+    public void onEventMainThread(ServerMessages.Disconnected event) {
+        Toast.makeText(this, R.string.game_disconnected_message, Toast.LENGTH_SHORT).show();
         EventBus.getDefault().unregister(this);
-
-        if (amIHotspot()) {
-            EventBus.getDefault().post(new Events.StopServer());
-        }
-
         finish();
     }
 
-    public void onEventMainThread(Events.ServerNotFoundError serverNotFoundError) {
-        Toast.makeText(this, R.string.server_not_found_error_message, Toast.LENGTH_SHORT).show();
+    public void onEventMainThread(Events.ClientServiceError event) {
+        Toast.makeText(this, R.string.room_common_error_message, Toast.LENGTH_SHORT).show();
         EventBus.getDefault().unregister(this);
+        finish();
+    }
 
-        if (amIHotspot()) {
-            EventBus.getDefault().post(new Events.StopServer());
-        }
-
+    public void onEventMainThread(Events.ServerNotFoundError event) {
+        Toast.makeText(this, R.string.room_server_not_found_error_message, Toast.LENGTH_SHORT).show();
+        EventBus.getDefault().unregister(this);
         finish();
     }
 

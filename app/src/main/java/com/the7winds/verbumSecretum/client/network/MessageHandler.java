@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.the7winds.verbumSecretum.client.other.ClientData;
 import com.the7winds.verbumSecretum.client.other.Events;
-import com.the7winds.verbumSecretum.other.Message;
 import com.the7winds.verbumSecretum.server.network.ServerMessages;
 
 import java.util.Hashtable;
@@ -15,7 +14,7 @@ import de.greenrobot.event.EventBus;
  * Created by the7winds on 05.12.15.
  */
 public class MessageHandler {
-
+    // TODO: think about while(true)
     private boolean gameActivityInited = false;
 
     // handler
@@ -58,20 +57,20 @@ public class MessageHandler {
         }
     }
 
-    private void onCorrect() {
-        EventBus.getDefault().post(new ServerMessages.Correct());
-    }
-
     public void onEvent(Events.GameActivityInited event) {
         gameActivityInited = true;
     }
 
-    // Check
+    private void onCorrect() {
+        EventBus.getDefault().post(new ServerMessages.Correct());
+    }
+
     private void onGameOver(String msg) {
         ServerMessages.GameOver message = new ServerMessages.GameOver();
         message.deserialize(msg);
 
         EventBus.getDefault().post(message);
+        EventBus.getDefault().post(new Events.StopClientService());
     }
 
     private void onInvalidMoveMessage() {
@@ -96,9 +95,6 @@ public class MessageHandler {
         EventBus.getDefault().post(message);
     }
 
-    // +--OK-----------------------------------------
-    // |
-    // V
     private void onStartMessage(String msg) {
         ServerMessages.GameStart message = new ServerMessages.GameStart();
         message.deserialize(msg);
@@ -125,7 +121,8 @@ public class MessageHandler {
     }
 
     private void onDisconnected() {
-        // TODO
+        EventBus.getDefault().post(new ServerMessages.Disconnected());
+        EventBus.getDefault().post(new Events.StopClientService());
     }
 
     private void onConnectedMessage(String msg) {

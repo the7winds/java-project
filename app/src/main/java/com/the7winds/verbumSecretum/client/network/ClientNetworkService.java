@@ -5,17 +5,18 @@ import android.content.Intent;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 
+import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.other.Connection;
 import com.the7winds.verbumSecretum.other.Message;
 import com.the7winds.verbumSecretum.server.network.Server;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -26,6 +27,7 @@ import de.greenrobot.event.EventBus;
  */
 public class ClientNetworkService extends IntentService {
 
+    public final static int CONNECTING_TIMEOUT = 20000;
     private InetAddress server = null;
     private int port;
 
@@ -77,9 +79,10 @@ public class ClientNetworkService extends IntentService {
     };
 
     private ConnectionHandler connectionHandler;
-    private ExecutorService executor = Executors.newCachedThreadPool();
+    private ExecutorService executorService = Executors.newCachedThreadPool();
     private MessageHandler messageHandler = new MessageHandler();
 
+    boolean nsdManagerStoped = false;
 
     public ClientNetworkService() {
         super("Client");
@@ -87,62 +90,69 @@ public class ClientNetworkService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        EventBus.getDefault().register(this);
+        EventBus.getDefault().register(messageHandler);
+
         try {
-            EventBus.getDefault().register(this);
-            EventBus.getDefault().register(messageHandler);
-            Future<Object> connected = executor.submit(new Connecting());
-            connected.get(Connecting.CONNECTING_TIMEOUT, TimeUnit.MILLISECONDS);
+            executorService.submit(new Callable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    nsdManager = (NsdManager) getSystemService(NSD_SERVICE);
+                    nsdManager.discoverServices("_http._tcp.", NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+
+                    while (server == null || Thread.interrupted());
+
+                    nsdManager.stopServiceDiscovery(discoveryListener);
+                    nsdManagerStoped = true;
+
+                    Connection connection = new Connection(server, port);
+                    connectionHandler = new ConnectionHandler(connection);
+                    connectionHandler.open();
+
+                    return null;
+                }
+            }).get(CONNECTING_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            EventBus.getDefault().unregister(this);
-            EventBus.getDefault().unregister(messageHandler);
-
-            nsdManager.stopServiceDiscovery(discoveryListener);
+            e.printStackTrace();
             EventBus.getDefault().post(new Events.ServerNotFoundError());
-            stopSelf();
-        } catch (InterruptedException | ExecutionException e) {
-            EventBus.getDefault().unregister(this);
-            EventBus.getDefault().unregister(messageHandler);
-
             nsdManager.stopServiceDiscovery(discoveryListener);
+            nsdManagerStoped = true;
+            errorHandle();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
             EventBus.getDefault().post(new Events.ClientServiceError());
-            stopSelf();
+            errorHandle();
         }
     }
 
-    private class Connecting implements Callable<Object> {
-
-        public final static int CONNECTING_TIMEOUT = 1000000;
-
-        @Override
-        public Object call() throws Exception {
-            nsdManager = (NsdManager) getSystemService(NSD_SERVICE);
-
-            while (server == null || Thread.interrupted()) {
-                nsdManager.discoverServices("_http._tcp.", NsdManager.PROTOCOL_DNS_SD, discoveryListener);
-            }
-
-            Connection connection = new Connection(server, port);
-            connectionHandler = new ConnectionHandler(connection);
-
-//            nsdManager.stopServiceDiscovery(discoveryListener);
-
-            executor.submit(connectionHandler);
-
-            return null;
-        }
+    private void errorHandle() {
+        EventBus.getDefault().unregister(this);
+        EventBus.getDefault().unregister(messageHandler);
+        stopSelf();
     }
 
-    public void onEvent(Events.SendToServerEvent sendToServerEvent) {
-        Message message = sendToServerEvent.message;
+    public void onEvent(Events.SendToServerEvent event) {
+        Message message = event.message;
         connectionHandler.send(message);
     }
 
-    public void onEvent(Events.StopClientService stopClientService) {
+    public void onEvent(Events.StopClientService event) {
         EventBus.getDefault().unregister(messageHandler);
         EventBus.getDefault().unregister(this);
 
-        // nsdManager.stopServiceDiscovery(discoveryListener);
-        executor.shutdownNow();
+        try {
+            connectionHandler.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (!nsdManagerStoped) {
+            nsdManager.stopServiceDiscovery(discoveryListener);
+        }
+
+        if (ClientUtils.amIHotspot(this)) {
+            EventBus.getDefault().post(new Events.StopServer());
+        }
 
         stopSelf();
     }

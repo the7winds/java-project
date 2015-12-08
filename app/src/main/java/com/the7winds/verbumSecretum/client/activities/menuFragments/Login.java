@@ -45,7 +45,7 @@ public class Login extends Fragment {
     }
 
     private void addPlayerToTable(ClientUtils.Player player) {
-        ViewGroup existedPlayerView = (ViewGroup) View.inflate(getActivity(), R.layout.existed_player, null);
+        ViewGroup existedPlayerView = (ViewGroup) View.inflate(getActivity(), R.layout.login_existed_player, null);
         TextView text = (TextView) existedPlayerView.findViewWithTag(EXISTED_PLAYER_TAG);
         text.setText(player.name);
         existedPlayersList.addView(existedPlayerView);

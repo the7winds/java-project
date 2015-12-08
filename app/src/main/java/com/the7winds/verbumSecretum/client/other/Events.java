@@ -1,10 +1,6 @@
 package com.the7winds.verbumSecretum.client.other;
 
 import com.the7winds.verbumSecretum.other.Message;
-import com.the7winds.verbumSecretum.server.game.Game;
-import com.the7winds.verbumSecretum.server.network.ServerMessages;
-
-import java.util.Map;
 
 /**
  * Created by the7winds on 05.12.15.
@@ -34,15 +30,12 @@ public class Events {
         public Message message;
     }
 
-    public static class StopClientService {
-    }
-
     public static class StopServer {
     }
 
     public static class ServerNotFoundError {
     }
 
-    public static class SelectRole {
+    public static class StopClientService {
     }
 }

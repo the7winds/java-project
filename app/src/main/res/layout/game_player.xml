@@ -1,39 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout
+<TableRow
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="100dp"
+    android:background="@color/game_player_panel"
+    android:gravity="center_horizontal">
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:tag="@string/game_ava_layout" />
-
-    <TableRow
-        android:layout_width="match_parent"
+    <HorizontalScrollView
+        android:layout_column="0"
+        android:layout_width="150dp"
         android:layout_height="wrap_content">
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Small Text"
-            android:tag="@string/game_player_name" />
-    </TableRow>
+            android:orientation="horizontal"
+            android:tag="@string/game_played_cards" />
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    </HorizontalScrollView>
 
-        <ScrollView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_height="wrap_content"
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_column="2">
+
+        <TableRow
+            android:tag="@string/game_ava_layout">
+        </TableRow>
+
+        <TableRow>
+            <TextView
                 android:layout_width="wrap_content"
-                android:tag="@string/game_played_cards"/>
-        </ScrollView>
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Small Text"
+                android:tag="@string/game_player_name" />
+        </TableRow>
 
-    </TableRow>
-</TableLayout>
+    </TableLayout>
+
+</TableRow>

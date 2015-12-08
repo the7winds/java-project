@@ -2,7 +2,11 @@ package com.the7winds.verbumSecretum.client.other;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.net.wifi.WifiManager;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,9 +21,6 @@ public class ClientUtils {
         public String name = "";
         public int all = 0;
         public int won = 0;
-
-        public Player() {
-        }
 
         public Player(String name, int all, int won) {
             this.name = name;
@@ -120,4 +121,25 @@ public class ClientUtils {
         return authorised;
     }
 
+    public static boolean amIHotspot(Context context) {
+        try {
+            WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            Method method = wifiManager.getClass().getDeclaredMethod("getWifiApState");
+            method.setAccessible(true);
+
+            int actualState = (Integer) method.invoke(wifiManager, (Object[]) null);
+            Field fField = wifiManager.getClass().getField("WIFI_AP_STATE_ENABLED");
+            int hotspotEnabled = (Integer) fField.get(fField);
+
+            if (actualState == hotspotEnabled) {
+                return true;
+            }
+
+        } catch (InvocationTargetException | NoSuchMethodException
+                | IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }
