@@ -405,6 +405,7 @@ public class GameActivity extends Activity {
         super.onPause();
 
         ClientData.gameActivityInited.set(false);
+        ClientData.gameActivityStarted.set(false);
 
         if (state != State.FINISH) {
             EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Leave()));

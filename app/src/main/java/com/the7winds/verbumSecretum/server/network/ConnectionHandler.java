@@ -8,6 +8,7 @@ import com.the7winds.verbumSecretum.other.Message;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,6 +26,8 @@ public class ConnectionHandler {
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
+    private final CountDownLatch closeLatch = new CountDownLatch(1);
+
     public ConnectionHandler(String id, Connection connection) {
         this.id = id;
         this.connection = connection;
@@ -37,6 +40,12 @@ public class ConnectionHandler {
 
     public void close() throws IOException {
         executorService.shutdownNow();
+
+        try {
+            closeLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         connection.close();
     }
 
@@ -54,10 +63,6 @@ public class ConnectionHandler {
         synchronized (sendMessageQueue) {
             sendMessageQueue.add(message);
         }
-    }
-
-    public Connection getConnection() {
-        return connection;
     }
 
     public String getId() {
@@ -80,6 +85,16 @@ public class ConnectionHandler {
                     connection.send(message.serialize());
                 }
             }
+
+            if (!connection.isClosed()) {
+                synchronized (sendMessageQueue) {
+                    while (!sendMessageQueue.isEmpty()) {
+                        connection.send(sendMessageQueue.remove().serialize());
+                    }
+                }
+            }
+
+            closeLatch.countDown();
         }
     }
 

@@ -120,11 +120,11 @@ public class Game {
     }
 
     private void initDec() {
-        List<Integer> nums = Arrays.asList(new Integer[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 });
-        // List<Integer> nums = Arrays.asList(new Integer[] { 4, 7, 3});
+        // List<Integer> nums = Arrays.asList(new Integer[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 });
+        List<Integer> nums = Arrays.asList(new Integer[] { 8, 7, 3 });
 
         Random random = new Random();
-        Collections.shuffle(nums, random);
+        // Collections.shuffle(nums, random);
 
         for (Integer n : nums) {
             switch (n) {
@@ -256,7 +256,7 @@ public class Game {
                 break;
 
             case PRINCESS_CARD: // game over
-                makeInactive(subject);
+                makeInactive(object);
                 finished = true;
                 break;
         }

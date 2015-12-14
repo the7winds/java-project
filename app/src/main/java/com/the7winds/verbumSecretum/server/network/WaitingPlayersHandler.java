@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
 import com.the7winds.verbumSecretum.client.other.ClientData;
-import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.other.Connection;
 import com.the7winds.verbumSecretum.server.game.Player;
 
@@ -19,8 +18,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * Created by the7winds on 05.12.15.

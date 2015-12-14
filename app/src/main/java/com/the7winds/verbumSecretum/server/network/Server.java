@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
+import android.util.Log;
 
 import com.the7winds.verbumSecretum.other.Message;
 import com.the7winds.verbumSecretum.server.game.Player;
@@ -66,15 +67,23 @@ public class Server extends IntentService {
             serverSocket = new ServerSocket(0);
             serverSocket.setSoTimeout(SERVER_ACCEPT_TIMEOUT);
 
+            Log.i("SERVER", "register service");
             registerService();
 
+            Log.i("SERVER", "waits players");
             WaitingPlayersHandler waitingPlayersHandler = new WaitingPlayersHandler(this, allConnections);
             Map<String, Player> players = waitingPlayersHandler.getPlayers();
 
+            Log.i("SERVER", "game generated");
             GameHandler gameHandler = new GameHandler(this, players);
 
+            Log.i("SERVER", "game start");
             gameHandler.startGame();
+
+            Log.i("SERVER", "game play");
             gameHandler.playGame();
+
+            Log.i("SERVER", "game finish");
             gameHandler.finishGame();
 
             terminate();
@@ -116,6 +125,7 @@ public class Server extends IntentService {
     }
 
     public void terminate() {
+        Log.i("SERVER", "terminate");
         nsdManager.unregisterService(registrationListener);
 
         try {
@@ -128,11 +138,13 @@ public class Server extends IntentService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // нужно дождаться завершения потоков
 
         stopSelf();
     }
 
     public synchronized void addConnection(String id, ConnectionHandler connectionHandler) {
+        Log.i("SERVER", "player connected");
         allConnections.put(id, connectionHandler);
     }
 
@@ -165,6 +177,12 @@ public class Server extends IntentService {
 
     public synchronized Player createPlayer(String id, String name) {
         return new Player(allConnections.get(id), name);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i("SERVER", "destroyed");
     }
 }
 

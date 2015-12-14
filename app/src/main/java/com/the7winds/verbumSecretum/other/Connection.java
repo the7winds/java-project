@@ -1,5 +1,7 @@
 package com.the7winds.verbumSecretum.other;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -31,6 +33,7 @@ public class Connection {
 
     public void send(String message) {
         try {
+            Log.i("MESSAGE_SEND" + "(" + socket.getInetAddress().toString() + ")", message);
             writer.write(message);
             writer.newLine();
             writer.flush();
@@ -44,6 +47,9 @@ public class Connection {
         try {
             socket.setSoTimeout(timeout);
             msg = reader.readLine();
+            if (msg != null) {
+                Log.i("MESSAGE_RECEIVED" + "(" + socket.getInetAddress().toString() + ")", msg);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -55,8 +61,15 @@ public class Connection {
     }
 
     public void close() throws IOException {
-        reader.close();
-        writer.close();
         socket.close();
+    }
+
+    public boolean inputReady() {
+        try {
+            return reader.ready();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
