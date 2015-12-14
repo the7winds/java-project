@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/loign_layout"
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/login_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:stretchColumns="0, 0 1">
@@ -14,27 +15,32 @@
             android:layout_height="wrap_content"
             android:text="@string/login_info"
             android:layout_span="3"/>
+
     </TableRow>
 
     <TableRow
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/login_login"/>
+            android:text="@string/login_login"
+            android:layout_weight="1"/>
 
         <EditText
             android:id="@+id/login_edit_text"
-            android:layout_width="60pt"
-            android:layout_height="wrap_content"/>
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"/>
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/login_confirm"
-            android:onClick="onClickConfirm"/>
+            android:onClick="onClickConfirm"
+            android:layout_weight="1"/>
+
     </TableRow>
 
     <TableRow
@@ -42,17 +48,20 @@
         android:layout_height="wrap_content">
 
         <ScrollView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/scrollView"
             android:layout_span="3">
+
             <TableLayout
                 android:id="@+id/login_list_view"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
             </TableLayout>
+
         </ScrollView>
+
     </TableRow>
 
 </TableLayout>

@@ -48,7 +48,6 @@ public class RoomActivity extends Activity {
         readyButton = (ToggleButton) roomView.findViewById(R.id.ready);
         readyButton.setClickable(false);
 
-        //
         EventBus.getDefault().register(this);
 
         // setting up view
@@ -71,7 +70,8 @@ public class RoomActivity extends Activity {
 
         EventBus.getDefault().unregister(this);
 
-        if (!isFinishing()) { // TODO check life cycle
+        if (!ClientData.gameActivityStarted.get()) {
+            EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Leave()));
             EventBus.getDefault().post(new Events.StopClientService());
         }
     }
@@ -104,24 +104,22 @@ public class RoomActivity extends Activity {
 
     public void onEventMainThread(ServerMessages.GameStarting event) {
         startActivity(new Intent().setClass(this, GameActivity.class));
+        ClientData.gameActivityStarted.set(true);
         finish();
     }
 
     public void onEventMainThread(ServerMessages.Disconnected event) {
         Toast.makeText(this, R.string.game_disconnected_message, Toast.LENGTH_SHORT).show();
-        EventBus.getDefault().unregister(this);
         finish();
     }
 
     public void onEventMainThread(Events.ClientServiceError event) {
         Toast.makeText(this, R.string.room_common_error_message, Toast.LENGTH_SHORT).show();
-        EventBus.getDefault().unregister(this);
         finish();
     }
 
     public void onEventMainThread(Events.ServerNotFoundError event) {
         Toast.makeText(this, R.string.room_server_not_found_error_message, Toast.LENGTH_SHORT).show();
-        EventBus.getDefault().unregister(this);
         finish();
     }
 

@@ -88,7 +88,7 @@ public class MenuActivity extends Activity
                     .commit();
         }
         else {
-            Toast.makeText(this, "incorrect login", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "incorrect menu_login", Toast.LENGTH_SHORT).show();
         }
     }
 

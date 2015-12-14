@@ -5,13 +5,11 @@ import android.content.Intent;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 
-import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.other.Connection;
 import com.the7winds.verbumSecretum.other.Message;
 import com.the7winds.verbumSecretum.server.network.Server;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -28,7 +26,8 @@ import de.greenrobot.event.EventBus;
 public class ClientNetworkService extends IntentService {
 
     public final static int CONNECTING_TIMEOUT = 20000;
-    private InetAddress server = null;
+
+    private InetAddress server;
     private int port;
 
     private NsdManager nsdManager;
@@ -82,8 +81,6 @@ public class ClientNetworkService extends IntentService {
     private ExecutorService executorService = Executors.newCachedThreadPool();
     private MessageHandler messageHandler = new MessageHandler();
 
-    boolean nsdManagerStoped = false;
-
     public ClientNetworkService() {
         super("Client");
     }
@@ -100,10 +97,9 @@ public class ClientNetworkService extends IntentService {
                     nsdManager = (NsdManager) getSystemService(NSD_SERVICE);
                     nsdManager.discoverServices("_http._tcp.", NsdManager.PROTOCOL_DNS_SD, discoveryListener);
 
-                    while (server == null || Thread.interrupted());
+                    while (server == null || Thread.interrupted()) ;
 
                     nsdManager.stopServiceDiscovery(discoveryListener);
-                    nsdManagerStoped = true;
 
                     Connection connection = new Connection(server, port);
                     connectionHandler = new ConnectionHandler(connection);
@@ -116,7 +112,6 @@ public class ClientNetworkService extends IntentService {
             e.printStackTrace();
             EventBus.getDefault().post(new Events.ServerNotFoundError());
             nsdManager.stopServiceDiscovery(discoveryListener);
-            nsdManagerStoped = true;
             errorHandle();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -133,25 +128,17 @@ public class ClientNetworkService extends IntentService {
 
     public void onEvent(Events.SendToServerEvent event) {
         Message message = event.message;
-        connectionHandler.send(message);
+        if (connectionHandler != null) {
+            connectionHandler.send(message);
+        }
     }
 
     public void onEvent(Events.StopClientService event) {
         EventBus.getDefault().unregister(messageHandler);
         EventBus.getDefault().unregister(this);
 
-        try {
+        if (connectionHandler != null && connectionHandler.isClosed()) {
             connectionHandler.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (!nsdManagerStoped) {
-            nsdManager.stopServiceDiscovery(discoveryListener);
-        }
-
-        if (ClientUtils.amIHotspot(this)) {
-            EventBus.getDefault().post(new Events.StopServer());
         }
 
         stopSelf();

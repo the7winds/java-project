@@ -11,9 +11,7 @@ import com.the7winds.verbumSecretum.server.game.Game;
 import com.the7winds.verbumSecretum.server.game.Player;
 
 import java.util.Hashtable;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by the7winds on 21.11.15.
@@ -160,9 +158,9 @@ public class ServerMessages {
 
         public GameStart(Map<String, Player> players, String first) {
             super(HEAD);
-            for (String id : players.keySet()) {
-                idToNames.put(id, players.get(id).getName());
-                idToCard.put(id, players.get(id).getHandCard());
+            for (Map.Entry<String, Player> idPlayer: players.entrySet()) {
+                idToNames.put(idPlayer.getKey(), idPlayer.getValue().getName());
+                idToCard.put(idPlayer.getKey(), idPlayer.getValue().getHandCard());
             }
 
             this.first = first;
@@ -393,12 +391,21 @@ public class ServerMessages {
         public static final String HEAD = "GameOver";
         // json structure fields
         private static final String WINNERS_FIELD = "winners";
-        private static final String HAND_CARDS_IDS_FIELD = "ids";
-        private static final String HAND_CARDS_CARDS_FIELD = "cards";
+        private static final String LAST_IDS_FIELD = "ids";
+        private static final String LAST_NAMES_FIELD = "names";
+        private static final String LAST_HAND_CARDS_FIELD = "cards";
 
-        // fields
-        private Map<String, Game.Card> handCards;
+        private Map<String, Pair<String, Game.Card>> lastNamesCards = new Hashtable<>();
+
         private String[] winners;
+
+        public String[] getWinners() {
+            return winners;
+        }
+
+        public Map<String, Pair<String, Game.Card>> getLastNamesCards() {
+            return lastNamesCards;
+        }
 
         public GameOver() {
             super(HEAD);
@@ -409,8 +416,9 @@ public class ServerMessages {
 
             winners = result;
 
-            for (String id : players.keySet()) {
-                handCards.put(id, players.get(id).getHandCard());
+            for (Map.Entry<String, Player> entry : players.entrySet()) {
+                Player player = entry.getValue();
+                lastNamesCards.put(entry.getKey(), new Pair<>(player.getName(), player.getHandCard()));
             }
         }
 
@@ -428,15 +436,18 @@ public class ServerMessages {
 
             JsonArray ids = new JsonArray();
             JsonArray cards = new JsonArray();
+            JsonArray names = new JsonArray();
 
-            for (String id : handCards.keySet()) {
-                ids.add(id);
-                cards.add(handCards.get(id).toString());
+            for (Map.Entry<String, Pair<String, Game.Card>> entry : lastNamesCards.entrySet()) {
+                ids.add(entry.getKey());
+                cards.add(entry.getValue().second.toString());
+                names.add(entry.getValue().first);
             }
 
-            gameOver.add(HAND_CARDS_IDS_FIELD, ids);
-            gameOver.add(HAND_CARDS_CARDS_FIELD, cards);
-
+            gameOver.add(LAST_IDS_FIELD, ids);
+            gameOver.add(LAST_HAND_CARDS_FIELD, cards);
+            gameOver.add(LAST_NAMES_FIELD, names);
+            
             return new Gson().toJson(gameOver);
         }
 
@@ -445,19 +456,21 @@ public class ServerMessages {
             JsonParser jsonParser = new JsonParser();
             JsonObject jsonObject = jsonParser.parse(str).getAsJsonObject();
 
-            JsonArray jWinners = jsonObject.getAsJsonArray(WINNERS_FIELD);
-            JsonArray jIds = jsonObject.getAsJsonArray(HAND_CARDS_IDS_FIELD);
-            JsonArray jCards = jsonObject.getAsJsonArray(HAND_CARDS_CARDS_FIELD);
+            JsonArray winners = jsonObject.getAsJsonArray(WINNERS_FIELD);
+            JsonArray ids = jsonObject.getAsJsonArray(LAST_IDS_FIELD);
+            JsonArray cards = jsonObject.getAsJsonArray(LAST_HAND_CARDS_FIELD);
+            JsonArray names = jsonObject.getAsJsonArray(LAST_NAMES_FIELD);
 
-            winners = new String[jWinners.size()];
-            for (int i = 0; i < winners.length; i++) {
-                winners[i] = jWinners.get(i).getAsString();
+            this.winners = new String[winners.size()];
+            for (int i = 0; i < winners.size(); i++) {
+                this.winners[i] = winners.get(i).getAsString();
             }
 
-            for (int i = 0; i < jIds.size(); i++) {
-                String id = jIds.get(i).getAsString();
-                Game.Card card = Game.Card.valueOf(jCards.get(i).getAsString());
-                handCards.put(id, card);
+            for (int i = 0; i < ids.size(); i++) {
+                String id = ids.get(i).getAsString();
+                Game.Card card = Game.Card.valueOf(cards.get(i).getAsString());
+                String name = names.get(i).getAsString();
+                lastNamesCards.put(id, new Pair<>(name, card));
             }
 
             return this;

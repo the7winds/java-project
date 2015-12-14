@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_menu_background">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:tag="@string/game_winners">
+
+        <TableRow android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/game_winners"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </TableRow>
+
+    </TableLayout>
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:tag="@string/game_last_players">
+
+        <TableRow android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/game_names"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:text="@string/game_card"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+        </TableRow>
+
+    </TableLayout>
+
+    <Button
+        android:layout_height="wrap_content"
+        android:text="@string/game_game_over_confirm"
+        android:layout_width="wrap_content"
+        android:onClick="onClickGameOverFrameOk"/>
+
+</LinearLayout>

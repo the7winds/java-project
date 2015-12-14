@@ -7,9 +7,6 @@ import com.the7winds.verbumSecretum.other.Message;
  */
 public class Events {
 
-    public static class GameActivityInited {
-    }
-
     public static class ReceivedMessage {
         public ReceivedMessage(String message) {
             this.msg = message;
@@ -28,9 +25,6 @@ public class Events {
         }
 
         public Message message;
-    }
-
-    public static class StopServer {
     }
 
     public static class ServerNotFoundError {

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Verbum Secretum</string>
 
-    <!-- menu -->
+    <!-- menu_menu -->
 
     <string name="menu_title">Verbum Secretum</string>
     <string name="menu_settings">Settings</string>
@@ -9,16 +9,16 @@
     <string name="menu_choose">Choose another player</string>
     <string name="menu_play">Play</string>
 
-    <!-- login -->
+    <!-- menu_login -->
 
     <string name="login_info">Enter your name or choose from existed players</string>
     <string name="login_login">login</string>
     <string name="login_confirm">ok</string>
-    <!--string name="login_enter_word">enter your login here</string-->
+    <!--string name="login_enter_word">enter your menu_login here</string-->
 
     <!-- settings -->
 
-    <!-- statistics -->
+    <!-- menu_statistics -->
 
     <string name="statistics_title">Statistics</string>
     <string name="statistics_all">all games:</string>
@@ -41,5 +41,10 @@
     <string name="game_choose_row">choose</string>
     <string name="game_invalid_move_message">invalide move</string>
     <string name="game_disconnected_message">disconnected</string>
+    <string name="game_game_over_confirm">ok</string>
+    <string name="game_winners">Winners:</string>
+    <string name="game_last_players">Last players:</string>
+    <string name="game_names">Names:</string>
+    <string name="game_card">Card:</string>
 
 </resources>

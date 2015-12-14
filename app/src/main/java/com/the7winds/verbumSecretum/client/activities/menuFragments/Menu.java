@@ -16,7 +16,7 @@ public class Menu extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View menuLayout = inflater.inflate(R.layout.menu, container, false);
+        View menuLayout = inflater.inflate(R.layout.menu_menu, container, false);
         return menuLayout;
     }
 

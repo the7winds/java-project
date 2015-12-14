@@ -14,8 +14,6 @@ import de.greenrobot.event.EventBus;
  * Created by the7winds on 05.12.15.
  */
 public class MessageHandler {
-    // TODO: think about while(true)
-    private boolean gameActivityInited = false;
 
     // handler
     public void onEvent(Events.ReceivedMessage receivedMessage) {
@@ -57,10 +55,6 @@ public class MessageHandler {
         }
     }
 
-    public void onEvent(Events.GameActivityInited event) {
-        gameActivityInited = true;
-    }
-
     private void onCorrect() {
         EventBus.getDefault().post(new ServerMessages.Correct());
     }
@@ -81,7 +75,7 @@ public class MessageHandler {
         ServerMessages.YourTurn message = new ServerMessages.YourTurn();
         message.deserialize(msg);
 
-        while (!gameActivityInited);
+        while (!ClientData.gameActivityInited.get());
 
         EventBus.getDefault().post(message);
     }
@@ -90,7 +84,7 @@ public class MessageHandler {
         ServerMessages.GameState message = new ServerMessages.GameState();
         message.deserialize(msg);
 
-        while (!gameActivityInited);
+        while (!ClientData.gameActivityInited.get());
 
         EventBus.getDefault().post(message);
     }
@@ -103,7 +97,7 @@ public class MessageHandler {
         ClientData.playersNames = new Hashtable<>(message.getIdToNames());
         ClientData.activePlayersNames = new Hashtable<>(message.getIdToNames());
 
-        while (!gameActivityInited);
+        while (!ClientData.gameActivityInited.get());
 
         EventBus.getDefault().post(message);
     }

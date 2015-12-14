@@ -14,6 +14,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.the7winds.verbumSecretum.R;
@@ -66,7 +67,7 @@ public class GameActivity extends Activity {
         tableLayout = (TableLayout) findViewById(R.id.game_table);
         infoTextView = (TextView) findViewById(R.id.game_info_text);
 
-        EventBus.getDefault().post(new Events.GameActivityInited());
+        ClientData.gameActivityInited.set(true);
     }
 
     private void initSelector() {
@@ -173,7 +174,8 @@ public class GameActivity extends Activity {
 
         public AvaView(final String id) {
             super(GameActivity.this);
-            setNormal();
+
+            imageView.setImageDrawable(defaultImage);
 
             imageView.setOnClickListener(new OnClickListener() {
                 @Override
@@ -196,6 +198,8 @@ public class GameActivity extends Activity {
             imageView.setLayoutParams(new LayoutParams(edge, edge));
 
             setClickable(false);
+
+            setNormal();
         }
 
         @Override
@@ -205,16 +209,17 @@ public class GameActivity extends Activity {
         }
 
         public void setNormal() {
-            // defaultImage.setAlpha(150);
-            // defaultImage.clearColorFilter();
+            defaultImage.clearColorFilter();
+            defaultImage.setAlpha(100);
         }
-        
+
         public void setActive() {
             defaultImage.setColorFilter(Color.YELLOW, PorterDuff.Mode.SCREEN);
         }
 
         public void setHighlight() {
-            //defaultImage.setAlpha(255);
+            defaultImage.clearColorFilter();
+            defaultImage.setAlpha(255);
         }
 
         public void setInactive() {
@@ -278,10 +283,10 @@ public class GameActivity extends Activity {
 
         Pair<String, Game.Card> newPlayedCard = gameState.getNewPlayedCard();
 
-        Map<String, Game.Card> cardsThatShouldbeShowed = gameState.getCardsThatShouldBeShowed();
+        Map<String, Game.Card> cardsThatShouldBeShowed = gameState.getCardsThatShouldBeShowed();
 
-        if (cardsThatShouldbeShowed.containsKey(ClientData.id)) {
-            CardView cardView = new CardView(cardsThatShouldbeShowed.get(ClientData.id));
+        if (cardsThatShouldBeShowed.containsKey(ClientData.id)) {
+            CardView cardView = new CardView(cardsThatShouldBeShowed.get(ClientData.id));
             cardView.setClickable(false);
             showCardFrame.addView(cardView);
             frameLayout.addView(showCardFrame);
@@ -305,7 +310,52 @@ public class GameActivity extends Activity {
         CardView cardView = new CardView(card);
         handView.addView(cardView);
 
+        resetAvas();
         state = State.CARD_SELECT;
+    }
+
+    public void onEventMainThread(ServerMessages.GameOver gameOver) {
+        state = State.FINISH;
+
+        LayoutInflater layoutInflater = getLayoutInflater();
+        ViewGroup gameOverFrame = (ViewGroup) layoutInflater.inflate(R.layout.game_game_over_frame, null);
+
+        TableLayout winners = (TableLayout) gameOverFrame.findViewWithTag(getString(R.string.game_winners));
+
+        for (String name : gameOver.getWinners()) {
+            TableRow tableRow = new TableRow(this);
+            TextView nameView = new TextView(this);
+
+            nameView.setText(name);
+            tableRow.addView(nameView);
+
+            winners.addView(tableRow);
+        }
+
+        TableLayout last = (TableLayout) gameOverFrame.findViewWithTag(getString(R.string.game_last_players));
+
+        for (Pair<String, Game.Card> nameCard : gameOver.getLastNamesCards().values()) {
+            TableRow tableRow = new TableRow(this);
+            TextView nameView = new TextView(this);
+            CardView cardView = new CardView(nameCard.second);
+
+            cardView.setClickable(false);
+            cardView.setLayoutParams(new TableRow.LayoutParams(0
+                    , ViewGroup.LayoutParams.WRAP_CONTENT
+                    , 1));
+
+            nameView.setText(nameCard.first);
+            nameView.setLayoutParams(new TableRow.LayoutParams(0
+                    , ViewGroup.LayoutParams.WRAP_CONTENT
+                    , 1));
+
+            tableRow.addView(nameView);
+            tableRow.addView(cardView);
+
+            last.addView(tableRow);
+        }
+
+        frameLayout.addView(gameOverFrame);
     }
 
     private void resetAvas() {
@@ -338,5 +388,27 @@ public class GameActivity extends Activity {
 
     public void onClickShowCardFrame(View view) {
         frameLayout.removeView(showCardFrame);
+    }
+
+    public void onClickGameOverFrameOk(View view) {
+        finish();
+    }
+
+    public void onEvent(ServerMessages.Disconnected event) {
+        if (state != State.FINISH) {
+            finish();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        ClientData.gameActivityInited.set(false);
+
+        if (state != State.FINISH) {
+            EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Leave()));
+            EventBus.getDefault().unregister(this);
+        }
     }
 }

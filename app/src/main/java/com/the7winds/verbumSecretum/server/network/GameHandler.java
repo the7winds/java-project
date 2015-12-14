@@ -5,10 +5,10 @@ import android.util.Pair;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
+import com.the7winds.verbumSecretum.client.other.ClientData;
 import com.the7winds.verbumSecretum.server.game.Game;
 import com.the7winds.verbumSecretum.server.game.Player;
 
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -31,15 +31,10 @@ public class GameHandler {
         game = new Game(players);
 
         server.broadcast(new ServerMessages.GameStart(game.getActivePlayers(), game.getCurrentPlayerId()));
-
-        playGame();
-
-        finishGame();
-
-        server.teminate();
     }
 
-    private void playGame() {
+    public void playGame()
+            throws ServerExceptions.ServerDeviceDisconnected, ServerExceptions.ActivePlayerDisconnected {
         server.sendTo(game.getCurrentPlayerId(), game.genYourTurnMessage());
 
         while (!game.isFinished()) {
@@ -68,8 +63,8 @@ public class GameHandler {
         }
     }
 
-    private void finishGame() {
-        server.broadcast(new ServerMessages.GameOver(game.getResults(), game.getActivePlayers()));
+    public void finishGame() {
+        server.broadcast(game.genGameOverMessage());
     }
 
     private void onMoveMessage(String id, PlayerMessages.Move message) {
@@ -87,15 +82,17 @@ public class GameHandler {
         }
     }
 
-    private void onLeave(String id, PlayerMessages.Leave message) {
-        if (game.isActivePlayer(id)) {
-            server.teminate();
-        } else {
-            try {
-                server.disconnect(id);
-            } catch (IOException ignored) {
+    private void onLeave(String id, PlayerMessages.Leave message)
+            throws ServerExceptions.ServerDeviceDisconnected, ServerExceptions.ActivePlayerDisconnected {
 
-            }
+        if (ClientData.id.equals(id)) {
+            throw new ServerExceptions.ServerDeviceDisconnected();
+        }
+
+        if (game.isActivePlayer(id)) {
+            throw new ServerExceptions.ActivePlayerDisconnected();
+        } else {
+            server.disconnect(id);
         }
     }
 }

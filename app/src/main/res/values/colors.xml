@@ -3,9 +3,13 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <!-- menu colors -->
-    <color name="colorMenuBackGround">#fff3bd</color>
-    <color name="colorMenuText">#951805</color>
-    <color name="game_player_panel">#fffff0</color>
-    <color name="game_selector_panel">#cccccc</color>
+
+    <!-- menu_menu colors -->
+    <color name="color_menu_background">#FFFF</color>
+    <color name="color_menu_text">#008e6f</color>
+
+    <!-- game colors -->
+    <color name="game_background">#ffffff</color>
+    <color name="game_player_panel">#009687</color>
+    <color name="game_selector_panel">#005b50</color>
 </resources>

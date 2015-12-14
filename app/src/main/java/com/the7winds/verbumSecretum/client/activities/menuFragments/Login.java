@@ -27,7 +27,7 @@ public class Login extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View loginLayout = inflater.inflate(R.layout.login, container, false);
+        View loginLayout = inflater.inflate(R.layout.menu_login, container, false);
 
         existedPlayersList = (TableLayout) loginLayout.findViewById(R.id.login_list_view);
 
@@ -45,7 +45,7 @@ public class Login extends Fragment {
     }
 
     private void addPlayerToTable(ClientUtils.Player player) {
-        ViewGroup existedPlayerView = (ViewGroup) View.inflate(getActivity(), R.layout.login_existed_player, null);
+        ViewGroup existedPlayerView = (ViewGroup) View.inflate(getActivity(), R.layout.menu_login_existed_player, null);
         TextView text = (TextView) existedPlayerView.findViewWithTag(EXISTED_PLAYER_TAG);
         text.setText(player.name);
         existedPlayersList.addView(existedPlayerView);

@@ -26,7 +26,7 @@ public class Statistics extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View statisticsLayout = inflater.inflate(R.layout.statistics, container, false);
+        View statisticsLayout = inflater.inflate(R.layout.menu_statistics, container, false);
 
         allGamesText = (TextView) statisticsLayout.findViewWithTag(ALL_GAMES_TEXT_TAG);
         wonGamesText = (TextView) statisticsLayout.findViewWithTag(WON_GAMES_TEXT_TAG);

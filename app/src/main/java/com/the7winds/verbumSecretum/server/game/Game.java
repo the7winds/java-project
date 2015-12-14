@@ -6,6 +6,7 @@ import com.the7winds.verbumSecretum.server.network.ServerMessages;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,8 +31,6 @@ public class Game {
 
     private Map<String, Card> cardsThatShouldBeShowed = new Hashtable<>();
 
-    private Random random = new Random();
-
     private Pair<String, Card> lastChange;
 
     public Map<String, Player> getActivePlayers() {
@@ -46,7 +45,7 @@ public class Game {
         return activePlayers.containsKey(id);
     }
 
-    public String[] getResults() {
+    private String[] getResults() {
         if (activePlayers.size() == 1) {
             return new String[] {((Player[]) activePlayers.values().toArray())[0].getName()};
         } else {
@@ -65,6 +64,31 @@ public class Game {
         }
     }
 
+    public ServerMessages.GameOver genGameOverMessage() {
+        String[] winnersNames;
+
+        if (activePlayers.size() == 1) {
+            winnersNames = new String[] { ((Player)activePlayers.values().toArray()[0]).getName() };
+        } else {
+            Collection<String> winners = new LinkedList<>();
+            Card max = Card.GUARD_CARD;
+
+            for (Player player : activePlayers.values()) {
+                if (player.getHandCard() == max) {
+                    winners.add(player.getName());
+                } else if (player.getHandCard().ordinal() > max.ordinal()) {
+                    max = player.getHandCard();
+                    winners = new LinkedList<>();
+                    winners.add(player.getName());
+                }
+            }
+
+            winnersNames = Arrays.copyOf(winners.toArray(), winners.size(), String[].class);
+        }
+
+        return new ServerMessages.GameOver(winnersNames, activePlayers);
+    }
+
     public enum Card {
         GUARD_CARD,
         PRIST_CARD,
@@ -77,16 +101,17 @@ public class Game {
     }
 
     public static class Move {
-        public String subjectId;
-        public Card card;
-        public String objectId;
-        public Card role;
+        public String subjectId = "";
+        public Card card = Card.GUARD_CARD;
+        public String objectId = "";
+        public Card role = Card.GUARD_CARD;
     }
 
     public Game(Map<String, Player> allPlayers) {
         activePlayers = allPlayers;
         players = allPlayers.values().toArray(new Player[allPlayers.size()]);
 
+        Random random = new Random();
         currentIdx = Math.abs(random.nextInt()) % players.length;
         // nextPlayer();
 
@@ -96,8 +121,10 @@ public class Game {
 
     private void initDec() {
         List<Integer> nums = Arrays.asList(new Integer[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 });
+        // List<Integer> nums = Arrays.asList(new Integer[] { 4, 7, 3});
 
-        // Collections.shuffle(nums, random);
+        Random random = new Random();
+        Collections.shuffle(nums, random);
 
         for (Integer n : nums) {
             switch (n) {
@@ -218,10 +245,11 @@ public class Game {
                 if (cantMove(move.objectId)) {
                     break;
                 }
-                Collection<Card> tmp = object.getHandCards();
-                object.getHandCards().addAll(subject.getHandCards());
+                Card tmp = object.getHandCard();
+                object.getHandCards().clear();
+                object.getHandCards().add(subject.getHandCard());
                 subject.getHandCards().clear();
-                subject.getHandCards().addAll(tmp);
+                subject.getHandCards().add(tmp);
                 break;
 
             case COUNTESS_CARD: // nothing
@@ -239,8 +267,7 @@ public class Game {
     }
 
     public boolean nextPlayer() {
-        if (deck.size() < 2 || activePlayers.size() == 1) {
-            finished = true;
+        if (finished) {
             return false;
         }
 
@@ -257,7 +284,7 @@ public class Game {
     }
 
     private void makeInactive(Player player) {
-        activePlayers.remove(player);
+        activePlayers.remove(player.getId());
     }
 
     public ServerMessages.GameState genGameStateMessage() {

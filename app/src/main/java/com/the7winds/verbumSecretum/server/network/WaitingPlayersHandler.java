@@ -5,6 +5,8 @@ import android.util.Pair;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
+import com.the7winds.verbumSecretum.client.other.ClientData;
+import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.other.Connection;
 import com.the7winds.verbumSecretum.server.game.Player;
 
@@ -12,9 +14,13 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import de.greenrobot.event.EventBus;
 
 /**
  * Created by the7winds on 05.12.15.
@@ -27,7 +33,6 @@ public class WaitingPlayersHandler {
     private Server server;
 
     private ExecutorService acceptorExecutorService = Executors.newSingleThreadExecutor();
-    private TimeChanges timeChanges;
 
     private Map<String, Player> readyPlayers;
 
@@ -37,7 +42,7 @@ public class WaitingPlayersHandler {
         this.server = server;
     }
 
-    public Map<String, Player> getPlayers() {
+    public Map<String, Player> getPlayers() throws ServerExceptions.ServerDeviceDisconnected {
         acceptorExecutorService.execute(new NewConnectionsAcceptor());
         waitPlayers();
         acceptorExecutorService.shutdownNow();
@@ -47,21 +52,16 @@ public class WaitingPlayersHandler {
     }
 
     private void disconnectNotPlaying() {
-        // server.unregisterNsdManager();
-
-        for (String id : server.getAllId()) {
+        Set<String> ids = new TreeSet<>(server.getAllId());
+        for (String id : ids) {
             if (!readyPlayers.containsKey(id)) {
-                try {
-                    server.disconnect(id);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                server.disconnect(id);
             }
         }
     }
 
-    private void waitPlayers() {
-        timeChanges = new TimeChanges();
+    private void waitPlayers() throws ServerExceptions.ServerDeviceDisconnected {
+        TimeChanges timeChanges = new TimeChanges();
         timeChanges.start();
 
         while (timeChanges.isAlive()) {
@@ -79,7 +79,7 @@ public class WaitingPlayersHandler {
         }
     }
 
-    private boolean onMessageReceived() {
+    private boolean onMessageReceived() throws ServerExceptions.ServerDeviceDisconnected {
         Pair<String, String> idMsg = ConnectionHandler.popMessage();
 
         if (idMsg != null) {
@@ -92,11 +92,11 @@ public class WaitingPlayersHandler {
             switch (jsonObject.get("HEAD").getAsString()) {
 
                 case PlayerMessages.Leave.HEAD: {
-                    return onMessageLeaveReceived(id, null);
+                    return onMessageLeaveReceived(id);
                 }
 
                 case PlayerMessages.NotReady.HEAD: {
-                    return onMessageNotReadyReceived(id, null);
+                    return onMessageNotReadyReceived(id);
                 }
 
                 case PlayerMessages.Ready.HEAD: {
@@ -119,27 +119,24 @@ public class WaitingPlayersHandler {
         }
     }
 
-    private boolean onMessageNotReadyReceived(String id, PlayerMessages.NotReady msg) {
+    private boolean onMessageNotReadyReceived(String id) {
         readyPlayers.remove(id);
-
         return true;
     }
 
-    private boolean onMessageLeaveReceived(String id, PlayerMessages.Leave msg) {
-        boolean res = false;
+    private boolean onMessageLeaveReceived(String id) throws ServerExceptions.ServerDeviceDisconnected {
+        if (id.equals(ClientData.id)) {
+            throw new ServerExceptions.ServerDeviceDisconnected();
+        }
+
+        server.removeConnection(id);
 
         if (readyPlayers.containsKey(id)) {
             readyPlayers.remove(id);
-            res = true;
+            return true;
         }
 
-        try {
-            server.disconnect(id);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return res;
+        return false;
     }
 
     private class NewConnectionsAcceptor implements Runnable {

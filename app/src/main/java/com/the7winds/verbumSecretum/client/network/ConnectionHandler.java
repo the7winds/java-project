@@ -31,9 +31,17 @@ public class ConnectionHandler {
         executorService.execute(new ReceiveTask());
     }
 
-    public void close() throws IOException {
-        executorService.shutdownNow();
-        connection.close();
+    public boolean isClosed() {
+        return connection.isClosed();
+    }
+
+    public void close() {
+        try {
+            executorService.shutdownNow();
+            connection.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private class ReceiveTask implements Runnable {

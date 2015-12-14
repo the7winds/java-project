@@ -2,9 +2,8 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="100dp"
-    android:layout_height="100dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:background="@color/game_selector_panel"
     android:layout_gravity="center_horizontal|center_vertical"
-    android:onClick="onClickShowCardFrame">
-</FrameLayout>
+    android:onClick="onClickShowCardFrame"/>

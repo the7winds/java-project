@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by the7winds on 27.11.15.
@@ -19,4 +20,7 @@ public class ClientData {
 
     public enum ReadyState {READY, NOT_READY}
     public static ReadyState readyState = ReadyState.NOT_READY;
+
+    public static AtomicBoolean gameActivityInited = new AtomicBoolean(false);
+    public static AtomicBoolean gameActivityStarted = new AtomicBoolean(false);
 }

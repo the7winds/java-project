@@ -5,18 +5,16 @@ import android.content.Intent;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 
-import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.other.Message;
 import com.the7winds.verbumSecretum.server.game.Player;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * Created by the7winds on 25.10.15.
@@ -26,7 +24,6 @@ public class Server extends IntentService {
     private static final int SERVER_ACCEPT_TIMEOUT = 100;
     public static final String SERVICE_NAME = "VERBUM_SECRETUM_SERVER";
 
-    private NsdServiceInfo nsdServiceInfo;
     private NsdManager nsdManager;
     private NsdManager.RegistrationListener registrationListener = new NsdManager.RegistrationListener() {
 
@@ -56,8 +53,8 @@ public class Server extends IntentService {
 
     private ServerSocket serverSocket;
 
-    private Map<String, ConnectionHandler> allConnections = new Hashtable<>();
-    private Set<String> allId;
+    private Map<String, ConnectionHandler> allConnections =
+            Collections.synchronizedMap(new Hashtable<String, ConnectionHandler>());
 
     public Server() {
         super(SERVICE_NAME);
@@ -66,8 +63,6 @@ public class Server extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         try {
-            EventBus.getDefault().register(this);
-
             serverSocket = new ServerSocket(0);
             serverSocket.setSoTimeout(SERVER_ACCEPT_TIMEOUT);
 
@@ -77,19 +72,24 @@ public class Server extends IntentService {
             Map<String, Player> players = waitingPlayersHandler.getPlayers();
 
             GameHandler gameHandler = new GameHandler(this, players);
-            gameHandler.startGame();
 
-            while (true);
+            gameHandler.startGame();
+            gameHandler.playGame();
+            gameHandler.finishGame();
+
+            terminate();
         }
         catch (IOException e) {
-            unregisterNsdManager();
-            EventBus.getDefault().unregister(this);
+            nsdManager.unregisterService(registrationListener);
             e.printStackTrace();
+        } catch (ServerExceptions.ServerDeviceDisconnected
+                | ServerExceptions.ActivePlayerDisconnected serverException) {
+            terminate();
         }
     }
 
     private void registerService() {
-        nsdServiceInfo = new NsdServiceInfo();
+        NsdServiceInfo nsdServiceInfo = new NsdServiceInfo();
 
         nsdServiceInfo.setServiceName(SERVICE_NAME);
         nsdServiceInfo.setServiceType("_http._tcp");
@@ -115,36 +115,48 @@ public class Server extends IntentService {
         return serverSocket.accept();
     }
 
-    public void onEvent(Events.StopServer stopServer) {
-        teminate();
-    }
-
-    public void unregisterNsdManager() {
+    public void terminate() {
         nsdManager.unregisterService(registrationListener);
+
+        try {
+            for (ConnectionHandler handler : allConnections.values()) {
+                handler.send(new ServerMessages.Disconnected());
+                handler.close();
+            }
+
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        stopSelf();
     }
 
     public synchronized void addConnection(String id, ConnectionHandler connectionHandler) {
         allConnections.put(id, connectionHandler);
     }
 
-    public synchronized void disconnect(String id) throws IOException {
-        sendTo(id, new ServerMessages.Disconnected());
-        ConnectionHandler handler = allConnections.remove(id);
-        handler.close();
-    }
-
-    public void teminate() {
+    public synchronized void removeConnection(String id) {
         try {
-            for (String id : allConnections.keySet()) {
-                disconnect(id);
+            ConnectionHandler handler = allConnections.remove(id);
+            if (handler != null) {
+                handler.close();
             }
-            serverSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
-        EventBus.getDefault().unregister(this);
-        stopSelf();
+    public synchronized void disconnect(String id) {
+        try {
+            sendTo(id, new ServerMessages.Disconnected());
+            ConnectionHandler handler = allConnections.remove(id);
+            if (handler != null) {
+                handler.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Set<String> getAllId() {
