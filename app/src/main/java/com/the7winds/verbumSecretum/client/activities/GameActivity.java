@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -44,7 +43,7 @@ public class GameActivity extends Activity {
 
     private FrameLayout frameLayout;
     private TableLayout tableLayout;
-    private HorizontalScrollView selector;
+    private View selector;
     private FrameLayout showCardFrame;
 
     private final static int edge = 90;
@@ -70,8 +69,8 @@ public class GameActivity extends Activity {
 
     private void initSelector() {
         LayoutInflater inflater = getLayoutInflater();
-        selector = (HorizontalScrollView) inflater.inflate(R.layout.game_card_selector, null);
-        LinearLayout tableRow = (LinearLayout) selector.findViewWithTag(getString(R.string.game_choose_row));
+        selector = inflater.inflate(R.layout.game_card_selector, null);
+        ViewGroup tableRow = (ViewGroup) selector.findViewWithTag(getString(R.string.game_choose_row));
 
         for (int i = 1; i < Game.Card.values().length; i++) {
             CardView cardView = new CardView(Game.Card.values()[i]);
@@ -294,6 +293,8 @@ public class GameActivity extends Activity {
         CardView prevCardView = new CardView(gameState.getNewPlayedCard().second);
         prevCardView.setClickable(false);
         playedCards.get(prevId).addView(prevCardView);
+
+        infoTextView.setText(gameState.getDescription());
     }
 
     public void onEventMainThread(ServerMessages.YourTurn yourTurn) {

@@ -229,12 +229,13 @@ public class ServerMessages {
         private static final String CURRENT_FIELD = "current";
         private static final String ACTIVE_PLAYERS_ID_FIELD = "active_players_id";
         private static final String ACTIVE_PLAYERS_HAND_FIELD = "active_hand";
-
+        private static final String DESCRIBTION_FIELD = "describtion";
 
         // fields
         private Pair<String, Game.Card> newPlayedCard;
         private Map<String, Game.Card> cardsThatShouldBeShowed = new Hashtable<>();
         private String current;
+        private String description;
 
         public Map<String, Game.Card> getActivePlayersIdHandCard() {
             return activePlayersIdHandCard;
@@ -259,12 +260,14 @@ public class ServerMessages {
         }
 
         public GameState(String current
+                         , String description
                          , Pair<String, Game.Card> newPlayedCard
                          , Map<String, Game.Card> cardsThatShouldBeShowed
                          , Map<String, Player> activePlayersId) {
             super(HEAD);
 
             this.current = current;
+            this.description = description;
             this.newPlayedCard = newPlayedCard;
             this.cardsThatShouldBeShowed = cardsThatShouldBeShowed;
             for (String id : activePlayersId.keySet()) {
@@ -302,6 +305,8 @@ public class ServerMessages {
             gameData.add(ACTIVE_PLAYERS_ID_FIELD, activeIds);
             gameData.add(ACTIVE_PLAYERS_HAND_FIELD, activeHand);
 
+            gameData.addProperty(DESCRIBTION_FIELD, description);
+
             return new Gson().toJson(gameData);
         }
 
@@ -333,7 +338,13 @@ public class ServerMessages {
                 activePlayersIdHandCard.put(id, card);
             }
 
+            description = jsonObject.get(DESCRIBTION_FIELD).getAsString();
+
             return this;
+        }
+
+        public String getDescription() {
+            return description;
         }
     }
 
