@@ -1,8 +1,6 @@
 package com.the7winds.verbumSecretum.client.activities;
 
 import android.app.Activity;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Pair;
@@ -19,7 +17,7 @@ import android.widget.TextView;
 
 import com.the7winds.verbumSecretum.R;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
-import com.the7winds.verbumSecretum.client.other.ClientData;
+import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.server.game.Game;
 import com.the7winds.verbumSecretum.server.network.ServerMessages;
@@ -67,7 +65,7 @@ public class GameActivity extends Activity {
         tableLayout = (TableLayout) findViewById(R.id.game_table);
         infoTextView = (TextView) findViewById(R.id.game_info_text);
 
-        ClientData.gameActivityInited.set(true);
+        ClientUtils.Data.gameActivityInited.set(true);
     }
 
     private void initSelector() {
@@ -120,12 +118,12 @@ public class GameActivity extends Activity {
                             || card == Game.Card.PRINCE_CARD
                             || card == Game.Card.KING_CARD) {
                         for (AvaView ava : playersAvas.values()) {
-                            ava.setActive();
+                            ava.setHighlightClickable();
                             ava.setClickable(true);
                         }
 
                         if (card == Game.Card.PRINCE_CARD) {
-                            myAva.setActive();
+                            myAva.setHighlightClickable();
                             myAva.setClickable(true);
                         }
 
@@ -170,12 +168,13 @@ public class GameActivity extends Activity {
     private class AvaView extends FrameLayout {
 
         private final Drawable defaultImage = getResources().getDrawable(R.drawable.normal);
+        private final Drawable clickableImage = getResources().getDrawable(R.drawable.clickable);
+        private final Drawable currentImage = getResources().getDrawable(R.drawable.current);
+        private final Drawable inactiveImage = getResources().getDrawable(R.drawable.inactive);
         private final ImageView imageView = new ImageView(GameActivity.this);
 
         public AvaView(final String id) {
             super(GameActivity.this);
-
-            imageView.setImageDrawable(defaultImage);
 
             imageView.setOnClickListener(new OnClickListener() {
                 @Override
@@ -209,29 +208,27 @@ public class GameActivity extends Activity {
         }
 
         public void setNormal() {
-            defaultImage.clearColorFilter();
-            defaultImage.setAlpha(100);
+            imageView.setImageDrawable(defaultImage);
         }
 
-        public void setActive() {
-            defaultImage.setColorFilter(Color.YELLOW, PorterDuff.Mode.SCREEN);
+        public void setHighlightClickable() {
+            imageView.setImageDrawable(clickableImage);
         }
 
-        public void setHighlight() {
-            defaultImage.clearColorFilter();
-            defaultImage.setAlpha(255);
+        public void setHighlightCurrent() {
+            imageView.setImageDrawable(currentImage);
         }
 
-        public void setInactive() {
-            defaultImage.setColorFilter(Color.LTGRAY, PorterDuff.Mode.SCREEN);
+        public void setHighlightInactive() {
+            imageView.setImageDrawable(inactiveImage);
         }
     }
 
     public void onEventMainThread(ServerMessages.GameStart gameStart) {
         LayoutInflater layoutInflater = getLayoutInflater();
 
-        Set<String> ids = new TreeSet<>(ClientData.playersNames.keySet());
-        ids.remove(ClientData.id);
+        Set<String> ids = new TreeSet<>(ClientUtils.Data.playersNames.keySet());
+        ids.remove(ClientUtils.Data.id);
 
         int counter = 0;
         for (String id : ids) {
@@ -245,7 +242,7 @@ public class GameActivity extends Activity {
 
             ((TextView) playerView
                     .findViewWithTag(getString(R.string.game_player_name)))
-                    .setText(ClientData.playersNames.get(id));
+                    .setText(ClientUtils.Data.playersNames.get(id));
 
             playedCards.put(id, (LinearLayout) playerView.findViewWithTag(getString(R.string.game_played_cards)));
 
@@ -253,48 +250,44 @@ public class GameActivity extends Activity {
         }
 
         ((ViewGroup) findViewById(R.id.game_my_ava))
-                .addView(myAva = new AvaView(ClientData.id));
+                .addView(myAva = new AvaView(ClientUtils.Data.id));
 
         ((TextView) findViewById(R.id.game_my_name))
-                .setText(ClientData.name);
+                .setText(ClientUtils.Data.playerStatisticsData.name);
 
         (handView = ((ViewGroup) findViewById(R.id.game_my_hand)))
-                .addView(new CardView((Game.Card) ClientData.hand.toArray()[0]));
+                .addView(new CardView(gameStart.getIdToCard().get(ClientUtils.Data.id)));
 
-        current = findAvaFromAll(gameStart.getFirst());
-        current.setHighlight();
+        (current = findAvaFromAll(gameStart.getFirst())).setHighlightCurrent();
 
-        playedCards.put(ClientData.id, (LinearLayout) findViewById(R.id.game_my_played_cards));
+        playedCards.put(ClientUtils.Data.id, (LinearLayout) findViewById(R.id.game_my_played_cards));
     }
 
     public void onEventMainThread(ServerMessages.GameState gameState) {
         resetAvas();
 
-        current = findAvaFromAll(gameState.getCurrent());
-        current.setHighlight();
-
-        for (String id : ClientData.playersNames.keySet()) {
+        for (String id : ClientUtils.Data.playersNames.keySet()) {
             if (gameState.getActivePlayersIdHandCard().containsKey(id)) {
                 findAvaFromAll(id).setNormal();
             } else {
-                findAvaFromAll(id).setInactive();
+                findAvaFromAll(id).setHighlightInactive();
             }
         }
 
-        Pair<String, Game.Card> newPlayedCard = gameState.getNewPlayedCard();
-
         Map<String, Game.Card> cardsThatShouldBeShowed = gameState.getCardsThatShouldBeShowed();
 
-        if (cardsThatShouldBeShowed.containsKey(ClientData.id)) {
-            CardView cardView = new CardView(cardsThatShouldBeShowed.get(ClientData.id));
+        if (cardsThatShouldBeShowed.containsKey(ClientUtils.Data.id)) {
+            CardView cardView = new CardView(cardsThatShouldBeShowed.get(ClientUtils.Data.id));
             cardView.setClickable(false);
             showCardFrame.addView(cardView);
             frameLayout.addView(showCardFrame);
         }
 
+        (current = findAvaFromAll(gameState.getCurrent())).setHighlightCurrent();
+
         handView.removeAllViews();
 
-        CardView cardView = new CardView(gameState.getActivePlayersIdHandCard().get(ClientData.id));
+        CardView cardView = new CardView(gameState.getActivePlayersIdHandCard().get(ClientUtils.Data.id));
         handView.addView(cardView);
 
         String prevId = gameState.getNewPlayedCard().first;
@@ -304,7 +297,7 @@ public class GameActivity extends Activity {
     }
 
     public void onEventMainThread(ServerMessages.YourTurn yourTurn) {
-        move.objectId = ClientData.id;
+        move.objectId = ClientUtils.Data.id;
 
         Game.Card card = yourTurn.getCard();
         CardView cardView = new CardView(card);
@@ -322,7 +315,7 @@ public class GameActivity extends Activity {
 
         TableLayout winners = (TableLayout) gameOverFrame.findViewWithTag(getString(R.string.game_winners));
 
-        for (String name : gameOver.getWinners()) {
+        for (String name : gameOver.getWinners().values()) {
             TableRow tableRow = new TableRow(this);
             TextView nameView = new TextView(this);
 
@@ -367,7 +360,7 @@ public class GameActivity extends Activity {
             ava.setClickable(false);
         }
 
-        current.setHighlight();
+        current.setHighlightCurrent();
     }
 
     public void onEventMainThread(ServerMessages.InvalidMove event) {
@@ -404,8 +397,8 @@ public class GameActivity extends Activity {
     protected void onPause() {
         super.onPause();
 
-        ClientData.gameActivityInited.set(false);
-        ClientData.gameActivityStarted.set(false);
+        ClientUtils.Data.gameActivityInited.set(false);
+        ClientUtils.Data.gameActivityStarted.set(false);
 
         if (state != State.FINISH) {
             EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Leave()));

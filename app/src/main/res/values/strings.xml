@@ -8,12 +8,15 @@
     <string name="menu_statistics">Statistics</string>
     <string name="menu_choose">Choose another player</string>
     <string name="menu_play">Play</string>
+    <string name="menu_rules">Rules</string>
 
     <!-- menu_login -->
 
     <string name="login_info">Enter your name or choose from existed players</string>
     <string name="login_login">login</string>
     <string name="login_confirm">ok</string>
+    <string name="login_existed_player_name_tag">existed_palyer_name_tag</string>
+
     <!--string name="login_enter_word">enter your menu_login here</string-->
 
     <!-- settings -->
@@ -24,6 +27,9 @@
     <string name="statistics_all">all games:</string>
     <string name="statistics_won">won games:</string>
     <string name="statistics_back">back to menu</string>
+    <string name="statistics_all_games_tag">statistics_all_games_tag</string>
+    <string name="statistics_won_games_tag">statistics_won_games_tag</string>
+
 
     <!-- room -->
     <string name="room_title">Connected players:"</string>
@@ -46,5 +52,24 @@
     <string name="game_last_players">Last players:</string>
     <string name="game_names">Names:</string>
     <string name="game_card">Card:</string>
+
+    <!-- Rules -->
+    <string name="rules_title">Rules:</string>
+    <string name="rules_rules_text">
+        The main goal is to stay alive. On your turn, you`ll
+        got second card in your hand. Then choose one of the
+        two cards touch it, and game applies its effect.
+    </string>
+    <string name="rules_cards_effects">Cards effects:</string>
+    <string name="rules_c1_effect">Try to guess opponent card. If it is the opponent leaves the game.</string>
+    <string name="rules_c2_effect">Applying to opponent shows his hand card</string>
+    <string name="rules_c3_effect">Compares your card, with opponent`s card. The player leaves th game if his card order less.</string>
+    <string name="rules_c4_effect">Protects you from attack during one round.</string>
+    <string name="rules_c5_effect">Changes your card.</string>
+    <string name="rules_c6_effect">Swap your card with chosen player.</string>
+    <string name="rules_c7_effect">You must play the card if you also have 6 or 5.</string>
+    <string name="rules_c8_effect">If you play the card, you leave the game.</string>
+    <string name="rules_back">back to menu</string>
+    <string name="login_incorrect_login">incorrect login</string>
 
 </resources>

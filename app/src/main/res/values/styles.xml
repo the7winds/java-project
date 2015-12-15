@@ -5,8 +5,19 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="android:layout_margin">1dp</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="Menu" parent="AppTheme">
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:padding">3dp</item>
+        <item name="android:gravity">center_vertical|center_horizontal</item>
+    </style>
+
+    <style name="Game" parent="AppTheme">
+        <item name="android:layout_margin">2dp</item>
+        <item name="android:gravity">center_vertical|center_horizontal</item>
     </style>
 
 </resources>

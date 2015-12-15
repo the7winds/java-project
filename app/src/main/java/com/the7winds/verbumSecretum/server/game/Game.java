@@ -65,28 +65,23 @@ public class Game {
     }
 
     public ServerMessages.GameOver genGameOverMessage() {
-        String[] winnersNames;
+        Map<String, String> winners = new Hashtable<>();
+        Card max = Card.GUARD_CARD;
 
-        if (activePlayers.size() == 1) {
-            winnersNames = new String[] { ((Player)activePlayers.values().toArray()[0]).getName() };
-        } else {
-            Collection<String> winners = new LinkedList<>();
-            Card max = Card.GUARD_CARD;
+        for (Map.Entry<String, Player> entry : activePlayers.entrySet()) {
+            String id = entry.getKey();
+            Player player = entry.getValue();
 
-            for (Player player : activePlayers.values()) {
-                if (player.getHandCard() == max) {
-                    winners.add(player.getName());
-                } else if (player.getHandCard().ordinal() > max.ordinal()) {
-                    max = player.getHandCard();
-                    winners = new LinkedList<>();
-                    winners.add(player.getName());
-                }
+            if (player.getHandCard() == max) {
+                winners.put(id, player.getName());
+            } else if (player.getHandCard().ordinal() > max.ordinal()) {
+                max = player.getHandCard();
+                winners = new Hashtable<>();
+                winners.put(id, player.getName());
             }
-
-            winnersNames = Arrays.copyOf(winners.toArray(), winners.size(), String[].class);
         }
 
-        return new ServerMessages.GameOver(winnersNames, activePlayers);
+        return new ServerMessages.GameOver(winners, activePlayers);
     }
 
     public enum Card {
@@ -120,11 +115,12 @@ public class Game {
     }
 
     private void initDec() {
-        // List<Integer> nums = Arrays.asList(new Integer[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 });
-        List<Integer> nums = Arrays.asList(new Integer[] { 8, 7, 3 });
+        List<Integer> nums = Arrays.asList(new Integer[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 });
+        // List<Integer> nums = Arrays.asList(new Integer[] { 1, 7, 8 });
+        // List<Integer> nums = Arrays.asList(new Integer[] { 7, 3, 5 });
 
         Random random = new Random();
-        // Collections.shuffle(nums, random);
+        Collections.shuffle(nums, random);
 
         for (Integer n : nums) {
             switch (n) {
@@ -202,7 +198,7 @@ public class Game {
                     break;
                 }
                 if (subject.getHandCards().contains(move.role)) {
-                    makeInactive(object);
+                    makeInactive(subject);
                 }
                 break;
 
@@ -220,11 +216,11 @@ public class Game {
                 Card subjectsCard = subject.getHandCard();
                 Card objectsCard = object.getHandCard();
 
-                if (subjectsCard.compareTo(objectsCard) > 0) {
+                if (subjectsCard.ordinal() > objectsCard.ordinal()) {
                     makeInactive(object);
                 }
 
-                if (subjectsCard.compareTo(objectsCard) < 0) {
+                if (subjectsCard.ordinal() < objectsCard.ordinal()) {
                     makeInactive(subject);
                 }
 

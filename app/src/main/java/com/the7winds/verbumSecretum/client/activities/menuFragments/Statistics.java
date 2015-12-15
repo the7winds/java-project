@@ -16,20 +16,15 @@ import com.the7winds.verbumSecretum.client.other.ClientUtils;
  */
 public class Statistics extends Fragment {
     private TextView allGamesText;
-
     private TextView wonGamesText;
-
-    private static final String ALL_GAMES_TEXT_TAG = "all_games_tag";
-
-    private static final String WON_GAMES_TEXT_TAG = "won_games_tag";
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View statisticsLayout = inflater.inflate(R.layout.menu_statistics, container, false);
 
-        allGamesText = (TextView) statisticsLayout.findViewWithTag(ALL_GAMES_TEXT_TAG);
-        wonGamesText = (TextView) statisticsLayout.findViewWithTag(WON_GAMES_TEXT_TAG);
+        allGamesText = (TextView) statisticsLayout.findViewWithTag(getString(R.string.statistics_all_games_tag));
+        wonGamesText = (TextView) statisticsLayout.findViewWithTag(getString(R.string.statistics_won_games_tag));
 
         updateLayout();
 
@@ -40,8 +35,8 @@ public class Statistics extends Fragment {
         if (ClientUtils.isAuthorised()
                 && allGamesText != null
                 && wonGamesText != null) {
-            allGamesText.setText(Integer.valueOf(ClientUtils.player.all).toString());
-            wonGamesText.setText(Integer.valueOf(ClientUtils.player.won).toString());
+            allGamesText.setText(Integer.valueOf(ClientUtils.Data.playerStatisticsData.all).toString());
+            wonGamesText.setText(Integer.valueOf(ClientUtils.Data.playerStatisticsData.won).toString());
         }
     }
 

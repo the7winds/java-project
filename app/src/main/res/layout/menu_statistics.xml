@@ -28,7 +28,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:tag="won_games_tag"/>
+                android:tag="@string/statistics_won_games_tag"/>
 
         </LinearLayout>
 
@@ -45,7 +45,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:tag="all_games_tag"/>
+                android:tag="@string/statistics_all_games_tag"/>
 
         </LinearLayout>
 

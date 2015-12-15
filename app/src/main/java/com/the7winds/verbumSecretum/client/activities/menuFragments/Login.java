@@ -1,13 +1,12 @@
 package com.the7winds.verbumSecretum.client.activities.menuFragments;
 
-import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.the7winds.verbumSecretum.R;
@@ -19,8 +18,6 @@ import java.util.List;
  * Created by the7winds on 20.10.15.
  */
 public class Login extends Fragment {
-
-    private static final String EXISTED_PLAYER_TAG = "existed_player_text";
 
     private TableLayout existedPlayersList;
 
@@ -37,17 +34,17 @@ public class Login extends Fragment {
     }
 
     public void updateExistedPlayersList() {
-        List<ClientUtils.Player> players = ClientUtils.DB.getAllPlayers();
+        List<ClientUtils.PlayerStatisticsData> playerStatisticsDatas = ClientUtils.DB.getAllPlayers();
         existedPlayersList.removeAllViews();
-        for (ClientUtils.Player player : players) {
-            addPlayerToTable(player);
+        for (ClientUtils.PlayerStatisticsData playerStatisticsData : playerStatisticsDatas) {
+            addPlayerToTable(playerStatisticsData);
         }
     }
 
-    private void addPlayerToTable(ClientUtils.Player player) {
+    private void addPlayerToTable(ClientUtils.PlayerStatisticsData playerStatisticsData) {
         ViewGroup existedPlayerView = (ViewGroup) View.inflate(getActivity(), R.layout.menu_login_existed_player, null);
-        TextView text = (TextView) existedPlayerView.findViewWithTag(EXISTED_PLAYER_TAG);
-        text.setText(player.name);
+        TextView text = (TextView) existedPlayerView.findViewWithTag(getString(R.string.login_existed_player_name_tag));
+        text.setText(playerStatisticsData.name);
         existedPlayersList.addView(existedPlayerView);
     }
 
@@ -58,8 +55,8 @@ public class Login extends Fragment {
     }
 
     public String getNameByView(View view) {
-        TableRow row = (TableRow) view.getParent();
-        TextView text = (TextView) row.findViewWithTag(EXISTED_PLAYER_TAG);
+        ViewGroup viewGroup = (ViewGroup) view.getParent();
+        TextView text = (TextView) viewGroup.findViewWithTag(getString(R.string.login_existed_player_name_tag));
         return text.getText().toString();
     }
 }

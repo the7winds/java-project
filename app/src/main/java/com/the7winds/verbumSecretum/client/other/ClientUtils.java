@@ -9,6 +9,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -17,12 +19,24 @@ import java.util.List;
 
 public class ClientUtils {
 
-    public static class Player {
+
+    public static class Data {
+        public static String id;
+
+        public static Map<String, String> playersNames;
+
+        public static AtomicBoolean gameActivityInited = new AtomicBoolean(false);
+        public static AtomicBoolean gameActivityStarted = new AtomicBoolean(false);
+
+        public static PlayerStatisticsData playerStatisticsData;
+    }
+
+    public static class PlayerStatisticsData {
         public String name = "";
         public int all = 0;
         public int won = 0;
 
-        public Player(String name, int all, int won) {
+        public PlayerStatisticsData(String name, int all, int won) {
             this.name = name;
             this.all = all;
             this.won = won;
@@ -32,15 +46,13 @@ public class ClientUtils {
 
     private static boolean authorised = false;
 
-    public static Player player;
-
     public static boolean validateLogin(String name) {
         return (name.length() > 2 && !DB.hasPlayer(name));
     }
 
     public static class DB {
 
-        private static List<Player> playersList;
+        private static List<PlayerStatisticsData> playersList;
 
         private static boolean changed = true;
 
@@ -76,7 +88,7 @@ public class ClientUtils {
             }
         }
 
-        public static List<Player> getAllPlayers() {
+        public static List<PlayerStatisticsData> getAllPlayers() {
             if (!DB.changed) {
                 return playersList;
             } else {
@@ -89,7 +101,7 @@ public class ClientUtils {
                         int all = Integer.parseInt(cursor.getString(1));
                         int won = Integer.parseInt(cursor.getString(2));
 
-                        playersList.add(new Player(name, all, won));
+                        playersList.add(new PlayerStatisticsData(name, all, won));
                     }
                 }
 
@@ -97,27 +109,26 @@ public class ClientUtils {
             }
         }
 
-        public static Player getPlayer(String name) {
+        public static PlayerStatisticsData getPlayer(String name) {
             Cursor cursor = playersDBHelper.getPlayer(name);
-            Player player = null;
+            PlayerStatisticsData playerStatisticsData = null;
 
             if (cursor != null && cursor.moveToNext()) {
                 int all = Integer.parseInt(cursor.getString(1));
                 int won = Integer.parseInt(cursor.getString(2));
-                player = new Player(name, all, won);
+                playerStatisticsData = new PlayerStatisticsData(name, all, won);
             }
 
-            return player;
+            return playerStatisticsData;
         }
     }
 
     public static void authoriseAs(String name) {
         authorised = true;
-        player = DB.getPlayer(name);
-        ClientData.name = name;
+        Data.playerStatisticsData = DB.getPlayer(name);
     }
 
-    public static  boolean isAuthorised() {
+    public static boolean isAuthorised() {
         return authorised;
     }
 
@@ -141,5 +152,10 @@ public class ClientUtils {
         }
 
         return false;
+    }
+
+    public static void saveStatistics() {
+        DB.changePlayersData(Data.playerStatisticsData.name, PlayersDBHelper.P_ALL, Data.playerStatisticsData.all);
+        DB.changePlayersData(Data.playerStatisticsData.name, PlayersDBHelper.P_WON, Data.playerStatisticsData.won);
     }
 }

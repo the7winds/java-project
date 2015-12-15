@@ -5,7 +5,7 @@ import android.util.Pair;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
-import com.the7winds.verbumSecretum.client.other.ClientData;
+import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.server.game.Game;
 import com.the7winds.verbumSecretum.server.game.Player;
 
@@ -85,7 +85,7 @@ public class GameHandler {
     private void onLeave(String id, PlayerMessages.Leave message)
             throws ServerExceptions.ServerDeviceDisconnected, ServerExceptions.ActivePlayerDisconnected {
 
-        if (ClientData.id.equals(id)) {
+        if (ClientUtils.Data.id.equals(id)) {
             throw new ServerExceptions.ServerDeviceDisconnected();
         }
 

@@ -6,7 +6,7 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
-import com.the7winds.verbumSecretum.client.other.ClientData;
+import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.other.Connection;
 import com.the7winds.verbumSecretum.other.Message;
@@ -138,7 +138,7 @@ public class ClientNetworkService extends IntentService {
     }
 
     public void onEvent(Events.StopClientService event) {
-        Log.i("Client" + "(" + ClientData.id + ")", "event stop");
+        Log.i("Client" + "(" + ClientUtils.Data.id + ")", "event stop");
         EventBus.getDefault().unregister(messageHandler);
         EventBus.getDefault().unregister(this);
 
@@ -146,12 +146,7 @@ public class ClientNetworkService extends IntentService {
             connectionHandler.close();
         }
 
+        Log.i("Client" + "(" + ClientUtils.Data.id + ")", "stopped");
         stopSelf();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.i("Client", "destroyed");
     }
 }

@@ -125,7 +125,7 @@ public class Server extends IntentService {
     }
 
     public void terminate() {
-        Log.i("SERVER", "terminate");
+        Log.i("SERVER", "start terminate");
         nsdManager.unregisterService(registrationListener);
 
         try {
@@ -138,8 +138,8 @@ public class Server extends IntentService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // нужно дождаться завершения потоков
 
+        Log.i("SERVER", "stopped");
         stopSelf();
     }
 
@@ -177,12 +177,6 @@ public class Server extends IntentService {
 
     public synchronized Player createPlayer(String id, String name) {
         return new Player(allConnections.get(id), name);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.i("SERVER", "destroyed");
     }
 }
 

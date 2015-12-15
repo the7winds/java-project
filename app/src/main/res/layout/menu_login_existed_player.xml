@@ -2,20 +2,29 @@
 <TableRow
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="#177660">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#398b78"
+        android:layout_weight="3">
 
         <TextView
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:tag="existed_player_text"
+            android:layout_width="wrap_content"
+            android:tag="@string/login_existed_player_name_tag"
             android:onClick="onClickChooseExistedPlayer"
-            android:clickable="true"
-            android:layout_weight="3"/>
+            android:clickable="true"/>
 
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:onClick="onClickDeleteExistedPlayer"
-            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="0dp"
+        android:adjustViewBounds="true"
+        android:onClick="onClickDeleteExistedPlayer"
+        android:layout_weight="0.3"
+        android:src="@drawable/delete"/>
 
 </TableRow>

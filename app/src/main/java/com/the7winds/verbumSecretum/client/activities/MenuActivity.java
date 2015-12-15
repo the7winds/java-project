@@ -1,30 +1,32 @@
 package com.the7winds.verbumSecretum.client.activities;
 
 import android.app.Activity;
-
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.FragmentManager;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.the7winds.verbumSecretum.R;
-import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.activities.menuFragments.Login;
 import com.the7winds.verbumSecretum.client.activities.menuFragments.Menu;
+import com.the7winds.verbumSecretum.client.activities.menuFragments.Rules;
 import com.the7winds.verbumSecretum.client.activities.menuFragments.Statistics;
+import com.the7winds.verbumSecretum.client.other.ClientUtils;
 
 
 public class MenuActivity extends Activity
                             implements Menu.MenuListener,
                                        Login.LoginListener,
-                                       Statistics.StatisticsListener {
+                                       Statistics.StatisticsListener,
+                                       Rules.RulesListener {
 
-    private FragmentManager fragmentManager;
-    private Menu menu;
-    private Login login;
-    private Statistics statistics;
+    private FragmentManager fragmentManager = getFragmentManager();
+    private Menu menu = new Menu();
+    private Login login = new Login();
+    private Statistics statistics = new Statistics();
+    private Rules rules = new Rules();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,24 +34,12 @@ public class MenuActivity extends Activity
 
         setContentView(R.layout.activity_main);
 
-
         ClientUtils.DB.openDB(this);
-
-        menu = new Menu();
-        login = new Login();
-        statistics = new Statistics();
-
-        fragmentManager = getFragmentManager();
 
         fragmentManager.beginTransaction()
                 .add(R.id.main, login)
                 .show(login)
                 .commit();
-    }
-
-
-    @Override
-    public void onClickSettings(View view) {
     }
 
     @Override
@@ -88,7 +78,7 @@ public class MenuActivity extends Activity
                     .commit();
         }
         else {
-            Toast.makeText(this, "incorrect menu_login", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.login_incorrect_login), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -115,6 +105,21 @@ public class MenuActivity extends Activity
 
     @Override
     public void onClickBack(View view) {
+        fragmentManager.beginTransaction()
+                .replace(R.id.main, menu)
+                .show(menu)
+                .commit();
+    }
+
+    public void onClickRules(View view) {
+        fragmentManager.beginTransaction()
+                .replace(R.id.main, rules)
+                .show(rules)
+                .commit();
+    }
+
+    @Override
+    public void onClickRulesBack(View view) {
         fragmentManager.beginTransaction()
                 .replace(R.id.main, menu)
                 .show(menu)

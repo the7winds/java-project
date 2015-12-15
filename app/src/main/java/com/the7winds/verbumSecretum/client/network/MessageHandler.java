@@ -2,7 +2,7 @@ package com.the7winds.verbumSecretum.client.network;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.the7winds.verbumSecretum.client.other.ClientData;
+import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.server.network.ServerMessages;
 
@@ -63,6 +63,11 @@ public class MessageHandler {
         ServerMessages.GameOver message = new ServerMessages.GameOver();
         message.deserialize(msg);
 
+        if (message.getWinners().containsKey(ClientUtils.Data.id)) {
+            ClientUtils.Data.playerStatisticsData.won++;
+            ClientUtils.saveStatistics();
+        }
+
         EventBus.getDefault().post(message);
         EventBus.getDefault().post(new Events.StopClientService());
     }
@@ -75,7 +80,7 @@ public class MessageHandler {
         ServerMessages.YourTurn message = new ServerMessages.YourTurn();
         message.deserialize(msg);
 
-        while (!ClientData.gameActivityInited.get());
+        while (!ClientUtils.Data.gameActivityInited.get());
 
         EventBus.getDefault().post(message);
     }
@@ -84,7 +89,7 @@ public class MessageHandler {
         ServerMessages.GameState message = new ServerMessages.GameState();
         message.deserialize(msg);
 
-        while (!ClientData.gameActivityInited.get());
+        while (!ClientUtils.Data.gameActivityInited.get());
 
         EventBus.getDefault().post(message);
     }
@@ -93,11 +98,12 @@ public class MessageHandler {
         ServerMessages.GameStart message = new ServerMessages.GameStart();
         message.deserialize(msg);
 
-        ClientData.hand.add(message.getIdToCard().get(ClientData.id));
-        ClientData.playersNames = new Hashtable<>(message.getIdToNames());
-        ClientData.activePlayersNames = new Hashtable<>(message.getIdToNames());
+        ClientUtils.Data.playersNames = new Hashtable<>(message.getIdToNames());
 
-        while (!ClientData.gameActivityInited.get());
+        ClientUtils.Data.playerStatisticsData.all++;
+        ClientUtils.saveStatistics();
+
+        while (!ClientUtils.Data.gameActivityInited.get());
 
         EventBus.getDefault().post(message);
     }
@@ -110,7 +116,7 @@ public class MessageHandler {
         ServerMessages.WaitingPlayersStatus message = new ServerMessages.WaitingPlayersStatus();
         message.deserialize(msg);
 
-        ClientData.playersNames = message.getPlayersNames();
+        ClientUtils.Data.playersNames = message.getPlayersNames();
         EventBus.getDefault().post(message);
     }
 
@@ -123,7 +129,7 @@ public class MessageHandler {
         ServerMessages.Connected message = new ServerMessages.Connected();
         message.deserialize(msg);
 
-        ClientData.id = message.getId();
+        ClientUtils.Data.id = message.getId();
 
         EventBus.getDefault().post(message);
     }

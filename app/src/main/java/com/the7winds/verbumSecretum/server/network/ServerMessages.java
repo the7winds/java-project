@@ -397,9 +397,9 @@ public class ServerMessages {
 
         private Map<String, Pair<String, Game.Card>> lastNamesCards = new Hashtable<>();
 
-        private String[] winners;
+        private Map<String, String> winners = new Hashtable<>();
 
-        public String[] getWinners() {
+        public Map<String, String> getWinners() {
             return winners;
         }
 
@@ -411,7 +411,7 @@ public class ServerMessages {
             super(HEAD);
         }
 
-        public GameOver(String[] result, Map<String, Player> players) {
+        public GameOver(Map<String, String> result, Map<String, Player> players) {
             super(HEAD);
 
             winners = result;
@@ -428,8 +428,13 @@ public class ServerMessages {
 
             JsonArray winners = new JsonArray();
 
-            for (String winner : this.winners) {
-                winners.add(winner);
+            for (Map.Entry<String, String> entry : this.winners.entrySet()) {
+                JsonArray winnerIdName = new JsonArray();
+
+                winnerIdName.add(entry.getKey());
+                winnerIdName.add(entry.getValue());
+
+                winners.add(winnerIdName);
             }
 
             gameOver.add(WINNERS_FIELD, winners);
@@ -461,9 +466,11 @@ public class ServerMessages {
             JsonArray cards = jsonObject.getAsJsonArray(LAST_HAND_CARDS_FIELD);
             JsonArray names = jsonObject.getAsJsonArray(LAST_NAMES_FIELD);
 
-            this.winners = new String[winners.size()];
             for (int i = 0; i < winners.size(); i++) {
-                this.winners[i] = winners.get(i).getAsString();
+                JsonArray winnerIdName = winners.get(i).getAsJsonArray();
+                String id = winnerIdName.get(0).getAsString();
+                String name = winnerIdName.get(1).getAsString();
+                this.winners.put(id, name);
             }
 
             for (int i = 0; i < ids.size(); i++) {

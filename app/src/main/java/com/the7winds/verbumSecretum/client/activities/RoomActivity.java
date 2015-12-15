@@ -12,7 +12,6 @@ import android.widget.ToggleButton;
 import com.the7winds.verbumSecretum.R;
 import com.the7winds.verbumSecretum.client.network.ClientNetworkService;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
-import com.the7winds.verbumSecretum.client.other.ClientData;
 import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.server.network.Server;
@@ -33,8 +32,6 @@ public class RoomActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ClientData.readyState = ClientData.ReadyState.NOT_READY;
 
         setContentView(R.layout.activity_room);
 
@@ -70,7 +67,7 @@ public class RoomActivity extends Activity {
 
         EventBus.getDefault().unregister(this);
 
-        if (!ClientData.gameActivityStarted.get()) {
+        if (!ClientUtils.Data.gameActivityStarted.get()) {
             EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Leave()));
             EventBus.getDefault().post(new Events.StopClientService());
         }
@@ -93,7 +90,7 @@ public class RoomActivity extends Activity {
             playerName.setText(R.string.room_empty_name);
         }
 
-        readyButton.setChecked(playersNames.containsKey(ClientData.id));
+        readyButton.setChecked(playersNames.containsKey(ClientUtils.Data.id));
         readyButton.setClickable(true);
     }
 
@@ -104,7 +101,7 @@ public class RoomActivity extends Activity {
 
     public void onEventMainThread(ServerMessages.GameStarting event) {
         startActivity(new Intent().setClass(this, GameActivity.class));
-        ClientData.gameActivityStarted.set(true);
+        ClientUtils.Data.gameActivityStarted.set(true);
         finish();
     }
 
@@ -128,9 +125,13 @@ public class RoomActivity extends Activity {
     public void onClickReady(View view) {
         readyButton.setClickable(false);
         if (readyButton.isChecked()) {
-            EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Ready(ClientData.name)));
+            EventBus.getDefault()
+                    .post(new Events.SendToServerEvent(
+                            new PlayerMessages.Ready(ClientUtils.Data.playerStatisticsData.name)));
         } else {
-            EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.NotReady()));
+            EventBus.getDefault()
+                    .post(new Events.SendToServerEvent(
+                            new PlayerMessages.NotReady()));
         }
     }
 }
