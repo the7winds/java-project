@@ -5,6 +5,7 @@ import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -68,6 +69,9 @@ public class MenuActivity extends Activity
         EditText editText = (EditText) findViewById(R.id.login_edit_text);
         String newLogin = editText.getText().toString();
 
+        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
+                .hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
         if (ClientUtils.validateLogin(newLogin)) {
             ClientUtils.DB.addNewPlayerDB(newLogin);
             ClientUtils.authoriseAs(newLogin);
@@ -76,14 +80,16 @@ public class MenuActivity extends Activity
                     .replace(R.id.main, menu)
                     .show(menu)
                     .commit();
-        }
-        else {
+        } else {
             Toast.makeText(this, getString(R.string.login_incorrect_login), Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onClickChooseExistedPlayer(View view) {
+        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
+                .hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
         ClientUtils.authoriseAs(login.getNameByView(view));
         fragmentManager.beginTransaction()
                 .replace(R.id.main, menu)

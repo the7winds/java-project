@@ -15,7 +15,8 @@
 
         <activity
             android:name=".client.activities.MenuActivity"
-            android:theme="@style/Menu">
+            android:theme="@style/Menu"
+            android:screenOrientation="portrait">
 
             <intent-filter>
 
@@ -29,7 +30,8 @@
 
         <activity
             android:name=".client.activities.RoomActivity"
-            android:theme="@style/Menu"/>
+            android:theme="@style/Menu"
+            android:screenOrientation="portrait"/>
 
         <service android:name=".server.network.Server" />
 
@@ -45,7 +47,8 @@
 
         <activity
             android:name=".client.activities.GameActivity"
-            android:theme="@style/Game"/>
+            android:theme="@style/Game"
+            android:screenOrientation="portrait"/>
 
     </application>
 

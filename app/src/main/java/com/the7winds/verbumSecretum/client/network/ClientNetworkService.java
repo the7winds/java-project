@@ -115,7 +115,9 @@ public class ClientNetworkService extends IntentService {
         } catch (TimeoutException e) {
             e.printStackTrace();
             EventBus.getDefault().post(new Events.ServerNotFoundError());
-            nsdManager.stopServiceDiscovery(discoveryListener);
+            if (nsdManager != null) {
+                nsdManager.stopServiceDiscovery(discoveryListener);
+            }
             errorHandle();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();

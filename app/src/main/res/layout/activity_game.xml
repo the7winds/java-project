@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".client.activities.GameActivity"
@@ -85,4 +85,193 @@
 
     </TableLayout>
 
-</FrameLayout>
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_gravity="start">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/rules_title"
+            android:layout_weight="1" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="15">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="@string/rules_rules_text"/>
+
+                <TableLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TableRow>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:textStyle="bold"
+                            android:text="@string/rules_cards_effects"/>
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/c1"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="4"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="@string/rules_c1_effect"/>
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/c2"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="4"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="@string/rules_c2_effect"/>
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/c3"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="4"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="@string/rules_c3_effect"/>
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/c4"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="4"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="@string/rules_c4_effect"/>
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/c5"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="4"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="@string/rules_c5_effect"/>
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/c6"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:adjustViewBounds="true"
+                            android:layout_weight="4"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="@string/rules_c6_effect"/>
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/c7"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="4"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="@string/rules_c7_effect"/>
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/c8"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="4"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="@string/rules_c8_effect"/>
+
+                    </TableRow>
+
+                </TableLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+</android.support.v4.widget.DrawerLayout>

@@ -3,7 +3,9 @@ package com.the7winds.verbumSecretum.client.activities;
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Pair;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,7 +43,7 @@ public class GameActivity extends Activity {
     private Map<String, AvaView> playersAvas = new Hashtable<>();
     private Map<String, LinearLayout> playedCards = new Hashtable<>();
 
-    private FrameLayout frameLayout;
+    private ViewGroup gameLayout;
     private TableLayout tableLayout;
     private View selector;
     private FrameLayout showCardFrame;
@@ -49,6 +51,8 @@ public class GameActivity extends Activity {
     private final static int edge = 90;
     private AvaView current;
     private CardView selectedCard;
+
+    private DrawerLayout drawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +64,8 @@ public class GameActivity extends Activity {
 
         showCardFrame = (FrameLayout) getLayoutInflater().inflate(R.layout.game_show_card_frame, null);
 
-        frameLayout  = (FrameLayout) findViewById(R.id.game_frame);
+        gameLayout = (ViewGroup) findViewById(R.id.game_frame);
+        drawerLayout = (DrawerLayout) gameLayout;
         tableLayout = (TableLayout) findViewById(R.id.game_table);
         infoTextView = (TextView) findViewById(R.id.game_info_text);
 
@@ -133,7 +138,7 @@ public class GameActivity extends Activity {
                     }
                 } else if (state == State.ROLE_SELECT) {
                     move.role = card;
-                    frameLayout.removeView(selector);
+                    gameLayout.removeView(selector);
                     EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Move(move)));
                     state = State.WAITING_UPD;
                 }
@@ -183,7 +188,7 @@ public class GameActivity extends Activity {
 
                     if (move.card == Game.Card.GUARD_CARD) {
                         state = State.ROLE_SELECT;
-                        frameLayout.addView(selector);
+                        gameLayout.addView(selector);
                     } else {
                         EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Move(move)));
                         state = State.WAITING_UPD;
@@ -278,8 +283,9 @@ public class GameActivity extends Activity {
         if (cardsThatShouldBeShowed.containsKey(ClientUtils.Data.id)) {
             CardView cardView = new CardView(cardsThatShouldBeShowed.get(ClientUtils.Data.id));
             cardView.setClickable(false);
+            cardView.setForegroundGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
             showCardFrame.addView(cardView);
-            frameLayout.addView(showCardFrame);
+            gameLayout.addView(showCardFrame);
         }
 
         (current = findAvaFromAll(gameState.getCurrent())).setHighlightCurrent();
@@ -349,7 +355,7 @@ public class GameActivity extends Activity {
             last.addView(tableRow);
         }
 
-        frameLayout.addView(gameOverFrame);
+        gameLayout.addView(gameOverFrame);
     }
 
     private void resetAvas() {
@@ -381,23 +387,22 @@ public class GameActivity extends Activity {
     }
 
     public void onClickShowCardFrame(View view) {
-        frameLayout.removeView(showCardFrame);
+        gameLayout.removeView(showCardFrame);
     }
 
     public void onClickGameOverFrameOk(View view) {
+        freeResources();
         finish();
     }
 
     public void onEvent(ServerMessages.Disconnected event) {
         if (state != State.FINISH) {
+            freeResources();
             finish();
         }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-
+    private void freeResources() {
         ClientUtils.Data.gameActivityInited.set(false);
         ClientUtils.Data.gameActivityStarted.set(false);
 
@@ -405,5 +410,13 @@ public class GameActivity extends Activity {
             EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Leave()));
             EventBus.getDefault().unregister(this);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        freeResources();
+        finish();
+
+        super.onBackPressed();
     }
 }
