@@ -71,5 +71,6 @@
     <string name="rules_c8_effect">If you play the card, you leave the game.</string>
     <string name="rules_back">back to menu</string>
     <string name="login_incorrect_login">incorrect login</string>
+    <string name="game_cards_counter">Cards in deck:</string>
 
 </resources>

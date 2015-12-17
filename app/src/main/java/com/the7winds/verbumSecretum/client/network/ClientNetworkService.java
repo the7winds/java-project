@@ -8,8 +8,8 @@ import android.util.Log;
 
 import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.other.Events;
-import com.the7winds.verbumSecretum.other.Connection;
-import com.the7winds.verbumSecretum.other.Message;
+import com.the7winds.verbumSecretum.utils.Connection;
+import com.the7winds.verbumSecretum.utils.Message;
 import com.the7winds.verbumSecretum.server.network.Server;
 
 import java.net.InetAddress;

@@ -16,7 +16,8 @@
             android:layout_width="wrap_content"
             android:tag="@string/login_existed_player_name_tag"
             android:onClick="onClickChooseExistedPlayer"
-            android:clickable="true"/>
+            android:clickable="true"
+            style="@style/TextAppearance.AppCompat.Medium"/>
 
     </LinearLayout>
 

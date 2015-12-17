@@ -6,7 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.the7winds.verbumSecretum.other.Message;
+import com.the7winds.verbumSecretum.utils.Message;
 import com.the7winds.verbumSecretum.server.game.Game;
 import com.the7winds.verbumSecretum.server.game.Player;
 
@@ -135,10 +135,12 @@ public class ServerMessages {
         private static final String NAMES_FIELD = "names";
         private static final String CARDS_FIELD = "cards";
         private static final String FIRST_FIELD = "first";
+        private static final String DECK_SIZE_FIELD = "deck_size";
 
         private final Map<String, String> idToNames = new Hashtable<>();
         private final Map<String, Game.Card> idToCard = new Hashtable<>();
         private String first;
+        private int deckSize;
 
         public String getFirst() {
             return first;
@@ -156,7 +158,7 @@ public class ServerMessages {
             super(HEAD);
         }
 
-        public GameStart(Map<String, Player> players, String first) {
+        public GameStart(Map<String, Player> players, String first, int deckSize) {
             super(HEAD);
             for (Map.Entry<String, Player> idPlayer: players.entrySet()) {
                 idToNames.put(idPlayer.getKey(), idPlayer.getValue().getName());
@@ -164,6 +166,7 @@ public class ServerMessages {
             }
 
             this.first = first;
+            this.deckSize = deckSize;
         }
 
         @Override
@@ -184,6 +187,8 @@ public class ServerMessages {
             gameStart.add(NAMES_FIELD, names);
             gameStart.add(CARDS_FIELD, cards);
             gameStart.addProperty(FIRST_FIELD, first);
+
+            gameStart.addProperty(DECK_SIZE_FIELD, deckSize);
 
             return new Gson().toJson(gameStart);
         }
@@ -207,8 +212,15 @@ public class ServerMessages {
 
             first = jsonObject.get(FIRST_FIELD).getAsString();
 
+            deckSize = jsonObject.get(DECK_SIZE_FIELD).getAsInt();
+
             return this;
         }
+
+        public int getDeckSize() {
+            return deckSize;
+        }
+
     }
 
     public static class GameStarting extends Message {
@@ -229,13 +241,15 @@ public class ServerMessages {
         private static final String CURRENT_FIELD = "current";
         private static final String ACTIVE_PLAYERS_ID_FIELD = "active_players_id";
         private static final String ACTIVE_PLAYERS_HAND_FIELD = "active_hand";
-        private static final String DESCRIBTION_FIELD = "describtion";
+        private static final String DESCRIPTION_FIELD = "description";
+        private static final String DECK_SIZE_FIELD = "deck_size";
 
         // fields
         private Pair<String, Game.Card> newPlayedCard;
         private Map<String, Game.Card> cardsThatShouldBeShowed = new Hashtable<>();
         private String current;
         private String description;
+        private int deckSize;
 
         public Map<String, Game.Card> getActivePlayersIdHandCard() {
             return activePlayersIdHandCard;
@@ -260,14 +274,16 @@ public class ServerMessages {
         }
 
         public GameState(String current
-                         , String description
-                         , Pair<String, Game.Card> newPlayedCard
-                         , Map<String, Game.Card> cardsThatShouldBeShowed
-                         , Map<String, Player> activePlayersId) {
+                , String description
+                , int deckSize
+                , Pair<String, Game.Card> newPlayedCard
+                , Map<String, Game.Card> cardsThatShouldBeShowed
+                , Map<String, Player> activePlayersId) {
             super(HEAD);
 
             this.current = current;
             this.description = description;
+            this.deckSize = deckSize;
             this.newPlayedCard = newPlayedCard;
             this.cardsThatShouldBeShowed = cardsThatShouldBeShowed;
             for (String id : activePlayersId.keySet()) {
@@ -305,7 +321,9 @@ public class ServerMessages {
             gameData.add(ACTIVE_PLAYERS_ID_FIELD, activeIds);
             gameData.add(ACTIVE_PLAYERS_HAND_FIELD, activeHand);
 
-            gameData.addProperty(DESCRIBTION_FIELD, description);
+            gameData.addProperty(DESCRIPTION_FIELD, description);
+
+            gameData.addProperty(DECK_SIZE_FIELD, deckSize);
 
             return new Gson().toJson(gameData);
         }
@@ -338,13 +356,18 @@ public class ServerMessages {
                 activePlayersIdHandCard.put(id, card);
             }
 
-            description = jsonObject.get(DESCRIBTION_FIELD).getAsString();
+            description = jsonObject.get(DESCRIPTION_FIELD).getAsString();
+            deckSize = jsonObject.get(DECK_SIZE_FIELD).getAsInt();
 
             return this;
         }
 
         public String getDescription() {
             return description;
+        }
+
+        public int getDeckSize() {
+            return deckSize;
         }
     }
 
@@ -463,7 +486,7 @@ public class ServerMessages {
             gameOver.add(LAST_IDS_FIELD, ids);
             gameOver.add(LAST_HAND_CARDS_FIELD, cards);
             gameOver.add(LAST_NAMES_FIELD, names);
-            
+
             return new Gson().toJson(gameOver);
         }
 

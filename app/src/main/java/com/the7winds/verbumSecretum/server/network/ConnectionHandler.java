@@ -2,8 +2,8 @@ package com.the7winds.verbumSecretum.server.network;
 
 import android.util.Pair;
 
-import com.the7winds.verbumSecretum.other.Connection;
-import com.the7winds.verbumSecretum.other.Message;
+import com.the7winds.verbumSecretum.utils.Connection;
+import com.the7winds.verbumSecretum.utils.Message;
 
 import java.io.IOException;
 import java.util.LinkedList;

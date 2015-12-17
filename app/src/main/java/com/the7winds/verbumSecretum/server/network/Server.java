@@ -6,7 +6,7 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
-import com.the7winds.verbumSecretum.other.Message;
+import com.the7winds.verbumSecretum.utils.Message;
 import com.the7winds.verbumSecretum.server.game.Player;
 
 import java.io.IOException;

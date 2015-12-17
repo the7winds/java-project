@@ -1,6 +1,6 @@
 package com.the7winds.verbumSecretum.client.other;
 
-import com.the7winds.verbumSecretum.other.Message;
+import com.the7winds.verbumSecretum.utils.Message;
 
 /**
  * Created by the7winds on 05.12.15.

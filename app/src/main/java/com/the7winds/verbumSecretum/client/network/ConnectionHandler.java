@@ -1,8 +1,8 @@
 package com.the7winds.verbumSecretum.client.network;
 
 import com.the7winds.verbumSecretum.client.other.Events;
-import com.the7winds.verbumSecretum.other.Connection;
-import com.the7winds.verbumSecretum.other.Message;
+import com.the7winds.verbumSecretum.utils.Connection;
+import com.the7winds.verbumSecretum.utils.Message;
 
 import java.io.IOException;
 import java.util.LinkedList;

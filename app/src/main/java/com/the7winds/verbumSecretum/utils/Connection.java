@@ -1,4 +1,4 @@
-package com.the7winds.verbumSecretum.other;
+package com.the7winds.verbumSecretum.utils;
 
 import android.util.Log;
 

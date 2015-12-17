@@ -1,4 +1,4 @@
-package com.the7winds.verbumSecretum.other;
+package com.the7winds.verbumSecretum.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -10,7 +10,6 @@ public abstract class Message {
 
     private final String head;
     protected static final String HEAD_FIELD = "HEAD";
-    protected String senderId;
 
     public Message(String head) {
         this.head = head;
@@ -32,13 +31,5 @@ public abstract class Message {
 
     protected String baseSerialize() {
         return new Gson().toJson(getBaseJsonObject());
-    }
-
-    final public String getHEAD() {
-        return head;
-    }
-
-    public void setSenderId(String id) {
-        senderId = id;
     }
 }

@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
 import com.the7winds.verbumSecretum.client.other.ClientUtils;
-import com.the7winds.verbumSecretum.other.Connection;
+import com.the7winds.verbumSecretum.utils.Connection;
 import com.the7winds.verbumSecretum.server.game.Player;
 
 import java.io.IOException;

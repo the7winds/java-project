@@ -3,7 +3,7 @@ package com.the7winds.verbumSecretum.client.network;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.the7winds.verbumSecretum.other.Message;
+import com.the7winds.verbumSecretum.utils.Message;
 import com.the7winds.verbumSecretum.server.game.Game;
 
 /**

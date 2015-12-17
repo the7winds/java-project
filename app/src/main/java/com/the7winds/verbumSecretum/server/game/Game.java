@@ -2,11 +2,10 @@ package com.the7winds.verbumSecretum.server.game;
 
 import android.util.Pair;
 
+import com.the7winds.verbumSecretum.utils.Message;
 import com.the7winds.verbumSecretum.server.network.ServerMessages;
 
-import java.security.Guard;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -36,35 +35,12 @@ public class Game {
 
     private String description;
 
-    public Map<String, Player> getActivePlayers() {
-        return activePlayers;
-    }
-
     public String getCurrentPlayerId() {
         return players[currentIdx].getId();
     }
 
     public boolean isActivePlayer(String id) {
         return activePlayers.containsKey(id);
-    }
-
-    private String[] getResults() {
-        if (activePlayers.size() == 1) {
-            return new String[] {((Player[]) activePlayers.values().toArray())[0].getName()};
-        } else {
-            Collection<String> winners = new LinkedList<>();
-            Card max = Card.GUARD_CARD;
-            for (Player player : activePlayers.values()) {
-                if (player.getHandCard() == max) {
-                    winners.add(player.getName());
-                } else if (player.getHandCard().ordinal() > max.ordinal()) {
-                    max = player.getHandCard();
-                    winners = new LinkedList<>();
-                    winners.add(player.getName());
-                }
-            }
-            return (String[]) winners.toArray();
-        }
     }
 
     public ServerMessages.GameOver genGameOverMessage() {
@@ -87,9 +63,13 @@ public class Game {
         return new ServerMessages.GameOver(winners, activePlayers);
     }
 
+    public Message genStartMessage() {
+        return new ServerMessages.GameStart(activePlayers, players[currentIdx].getId(), deck.size());
+    }
+
     public enum Card {
         GUARD_CARD,
-        PRIST_CARD,
+        PRIEST_CARD,
         LORD_CARD,
         STAFF_CARD,
         PRINCE_CARD,
@@ -111,7 +91,6 @@ public class Game {
 
         Random random = new Random();
         currentIdx = Math.abs(random.nextInt()) % players.length;
-        // nextPlayer();
 
         initDec();
         giveCards();
@@ -119,8 +98,6 @@ public class Game {
 
     private void initDec() {
         List<Integer> nums = Arrays.asList(new Integer[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 });
-        // List<Integer> nums = Arrays.asList(new Integer[] { 1, 7, 8 });
-        // List<Integer> nums = Arrays.asList(new Integer[] { 7, 3, 5 });
 
         Random random = new Random();
         Collections.shuffle(nums, random);
@@ -128,7 +105,7 @@ public class Game {
         for (Integer n : nums) {
             switch (n) {
                 case 1: deck.add(Card.GUARD_CARD);      break;
-                case 2: deck.add(Card.PRIST_CARD);      break;
+                case 2: deck.add(Card.PRIEST_CARD);      break;
                 case 3: deck.add(Card.LORD_CARD);       break;
                 case 4: deck.add(Card.STAFF_CARD);      break;
                 case 5: deck.add(Card.PRINCE_CARD);     break;
@@ -146,7 +123,6 @@ public class Game {
     }
 
     public boolean isValidMove(Move move) {
-
         Player object = activePlayers.get(move.objectId);
         Player subject = activePlayers.get(move.subjectId);
 
@@ -154,7 +130,7 @@ public class Game {
             case GUARD_CARD:
                 return cantMove(move.objectId) || (move.role != Card.GUARD_CARD
                         && (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD));
-            case PRIST_CARD:
+            case PRIEST_CARD:
                 return cantMove(move.objectId) || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD);
             case LORD_CARD:
                 return cantMove(move.objectId) || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD);
@@ -200,17 +176,17 @@ public class Game {
                 if (cantMove(move.objectId)) {
                     break;
                 }
-                description = genDescription(object.getName(), move.card.toString(), subject.getName(), move.role.toString());
+                description = genDescription(object.getName(), move.card, subject.getName(), move.role);
                 if (subject.getHandCards().contains(move.role)) {
                     makeInactive(subject);
                 }
                 break;
 
-            case PRIST_CARD: // show
+            case PRIEST_CARD: // show
                 if (cantMove(move.objectId)) {
                     break;
                 }
-                description = genDescription(object.getName(), move.card.toString(), subject.getName());
+                description = genDescription(object.getName(), move.card, subject.getName());
                 cardsThatShouldBeShowed.put(move.objectId, subject.getHandCard());
                 break;
 
@@ -219,7 +195,7 @@ public class Game {
                     break;
                 }
 
-                description = genDescription(object.getName(), move.card.toString(), subject.getName());
+                description = genDescription(object.getName(), move.card, subject.getName());
 
                 Card subjectsCard = subject.getHandCard();
                 Card objectsCard = object.getHandCard();
@@ -238,11 +214,11 @@ public class Game {
                 break;
 
             case STAFF_CARD: // protect
-                description = genDescription(object.getName(), move.card.toString());
+                description = genDescription(object.getName(), move.card);
                 break;
 
             case PRINCE_CARD: // change
-                description = genDescription(object.getName(), move.card.toString(), subject.getName());
+                description = genDescription(object.getName(), move.card, subject.getName());
                 subject.getHandCards().clear();
                 subject.getHandCards().add(deck.remove());
                 break;
@@ -251,7 +227,7 @@ public class Game {
                 if (cantMove(move.objectId)) {
                     break;
                 }
-                description = genDescription(object.getName(), move.card.toString(), subject.getName());
+                description = genDescription(object.getName(), move.card, subject.getName());
                 Card tmp = object.getHandCard();
                 object.getHandCards().clear();
                 object.getHandCards().add(subject.getHandCard());
@@ -260,11 +236,11 @@ public class Game {
                 break;
 
             case COUNTESS_CARD: // nothing
-                description = genDescription(object.getName(), move.card.toString());
+                description = genDescription(object.getName(), move.card);
                 break;
 
             case PRINCESS_CARD: // game over
-                description = genDescription(object.getName(), move.card.toString());
+                description = genDescription(object.getName(), move.card);
                 makeInactive(object);
                 finished = true;
                 break;
@@ -282,8 +258,7 @@ public class Game {
 
         do {
             currentIdx = (currentIdx + 1) % players.length;
-        }
-        while (!isActivePlayer(players[currentIdx].getId()));
+        } while (!isActivePlayer(players[currentIdx].getId()));
 
         return true;
     }
@@ -299,6 +274,7 @@ public class Game {
     public ServerMessages.GameState genGameStateMessage() {
         return new ServerMessages.GameState(players[currentIdx].getId()
                 , description
+                , deck.size()
                 , lastChange
                 , cardsThatShouldBeShowed
                 , activePlayers);
@@ -310,15 +286,15 @@ public class Game {
         return new ServerMessages.YourTurn(card);
     }
 
-    private String genDescription(String object, String card) {
-        return object + " played " + card;
+    private String genDescription(String object, Card card) {
+        return object + " played " + Integer.toString(card.ordinal());
     }
 
-    private String genDescription(String object, String card, String subject) {
-        return object + " played " + card + " on " + subject;
+    private String genDescription(String object, Card card, String subject) {
+        return object + " played " + Integer.toString(card.ordinal()) + " on " + subject;
     }
 
-    private String genDescription(String object, String card, String subject, String role) {
-        return object + " suppose that " + subject + "`s role is " + role;
+    private String genDescription(String object, Card card, String subject, Card role) {
+        return object + " suppose that " + subject + "`s role is " + Integer.toString(role.ordinal() + 1);
     }
 }

@@ -30,7 +30,7 @@ public class GameHandler {
 
         game = new Game(players);
 
-        server.broadcast(new ServerMessages.GameStart(game.getActivePlayers(), game.getCurrentPlayerId()));
+        server.broadcast(game.genStartMessage());
     }
 
     public void playGame()

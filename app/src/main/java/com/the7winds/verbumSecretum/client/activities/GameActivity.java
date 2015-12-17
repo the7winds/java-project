@@ -3,9 +3,7 @@ package com.the7winds.verbumSecretum.client.activities;
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.widget.DrawerLayout;
 import android.util.Pair;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,13 +44,12 @@ public class GameActivity extends Activity {
     private ViewGroup gameLayout;
     private TableLayout tableLayout;
     private View selector;
-    private FrameLayout showCardFrame;
+    private ViewGroup showCardFrame;
+    private TextView cardsCounter;
 
-    private final static int edge = 90;
+    private int edge;
     private AvaView current;
     private CardView selectedCard;
-
-    private DrawerLayout drawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,14 +57,17 @@ public class GameActivity extends Activity {
         setContentView(R.layout.activity_game);
 
         EventBus.getDefault().register(this);
+
+        edge = getResources().getDisplayMetrics().widthPixels / 5;
+
         initSelector();
 
-        showCardFrame = (FrameLayout) getLayoutInflater().inflate(R.layout.game_show_card_frame, null);
+        showCardFrame = (ViewGroup) getLayoutInflater().inflate(R.layout.game_show_card, null);
 
         gameLayout = (ViewGroup) findViewById(R.id.game_frame);
-        drawerLayout = (DrawerLayout) gameLayout;
         tableLayout = (TableLayout) findViewById(R.id.game_table);
         infoTextView = (TextView) findViewById(R.id.game_info_text);
+        cardsCounter = (TextView) findViewById(R.id.cards_counter);
 
         ClientUtils.Data.gameActivityInited.set(true);
     }
@@ -85,14 +85,16 @@ public class GameActivity extends Activity {
 
     private class CardView extends FrameLayout {
 
+        private static final int padding = 3;
         private final Game.Card card;
         private ImageView imageView;
 
         public CardView(final Game.Card card) {
             super(GameActivity.this);
 
-            setPadding(10, 10, 10, 10);
             this.card = card;
+            
+            setPadding(padding, padding, padding, padding);
             Drawable image = getCardDrawable(card);
 
             imageView = new ImageView(GameActivity.this);
@@ -117,7 +119,7 @@ public class GameActivity extends Activity {
                     move.card = card;
 
                     if (card == Game.Card.GUARD_CARD
-                            || card == Game.Card.PRIST_CARD
+                            || card == Game.Card.PRIEST_CARD
                             || card == Game.Card.LORD_CARD
                             || card == Game.Card.PRINCE_CARD
                             || card == Game.Card.KING_CARD) {
@@ -150,7 +152,7 @@ public class GameActivity extends Activity {
         switch (card) {
             case GUARD_CARD:
                 return getResources().getDrawable(R.drawable.c1);
-            case PRIST_CARD:
+            case PRIEST_CARD:
                 return getResources().getDrawable(R.drawable.c2);
             case LORD_CARD:
                 return getResources().getDrawable(R.drawable.c3);
@@ -234,7 +236,7 @@ public class GameActivity extends Activity {
         Set<String> ids = new TreeSet<>(ClientUtils.Data.playersNames.keySet());
         ids.remove(ClientUtils.Data.id);
 
-        int counter = 0;
+        int counter = 1;
         for (String id : ids) {
             View playerView = layoutInflater.inflate(R.layout.game_player, null);
 
@@ -265,6 +267,8 @@ public class GameActivity extends Activity {
         (current = findAvaFromAll(gameStart.getFirst())).setHighlightCurrent();
 
         playedCards.put(ClientUtils.Data.id, (LinearLayout) findViewById(R.id.game_my_played_cards));
+
+        cardsCounter.setText(genDeckSizeMessage(gameStart.getDeckSize()));
     }
 
     public void onEventMainThread(ServerMessages.GameState gameState) {
@@ -283,7 +287,6 @@ public class GameActivity extends Activity {
         if (cardsThatShouldBeShowed.containsKey(ClientUtils.Data.id)) {
             CardView cardView = new CardView(cardsThatShouldBeShowed.get(ClientUtils.Data.id));
             cardView.setClickable(false);
-            cardView.setForegroundGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
             showCardFrame.addView(cardView);
             gameLayout.addView(showCardFrame);
         }
@@ -301,6 +304,12 @@ public class GameActivity extends Activity {
         playedCards.get(prevId).addView(prevCardView);
 
         infoTextView.setText(gameState.getDescription());
+        cardsCounter.setText(genDeckSizeMessage(gameState.getDeckSize()));
+    }
+
+    private String genDeckSizeMessage(int deckSize) {
+        return getString(R.string.game_cards_counter)
+                + " " + Integer.toString(deckSize);
     }
 
     public void onEventMainThread(ServerMessages.YourTurn yourTurn) {
