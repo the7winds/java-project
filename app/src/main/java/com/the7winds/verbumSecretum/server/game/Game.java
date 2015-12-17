@@ -129,19 +129,19 @@ public class Game {
         switch (move.card) {
             case GUARD_CARD:
                 return cantMove(move.objectId) || (move.role != Card.GUARD_CARD
-                        && (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD));
+                        && (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().getLast() != Card.STAFF_CARD));
             case PRIEST_CARD:
-                return cantMove(move.objectId) || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD);
+                return cantMove(move.objectId) || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().getLast() != Card.STAFF_CARD);
             case LORD_CARD:
-                return cantMove(move.objectId) || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD);
+                return cantMove(move.objectId) || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().getLast() != Card.STAFF_CARD);
             case STAFF_CARD:
                 return true;
             case PRINCE_CARD:
                 return (!object.getHandCards().contains(Card.COUNTESS_CARD) &&
-                        (object == subject || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD)));
+                        (object == subject || (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().getLast() != Card.STAFF_CARD)));
             case KING_CARD:
                 return cantMove(move.objectId) || (!object.getHandCards().contains(Card.COUNTESS_CARD) &&
-                        (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().element() != Card.STAFF_CARD));
+                        (subject.getPlayedCards().isEmpty() || subject.getPlayedCards().getLast() != Card.STAFF_CARD));
             case COUNTESS_CARD:
                 return true;
             case PRINCESS_CARD:

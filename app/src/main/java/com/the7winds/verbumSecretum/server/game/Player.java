@@ -15,7 +15,7 @@ public class Player {
     private ConnectionHandler connection;
 
     private Collection<Game.Card> handCards = new LinkedList<>();
-    private Queue<Game.Card> playedCards = new LinkedList<>();
+    private LinkedList<Game.Card> playedCards = new LinkedList<>();
 
     public Player(ConnectionHandler connection, String name) {
         this.connection = connection;
@@ -26,7 +26,7 @@ public class Player {
         return name;
     }
 
-    public Queue<Game.Card> getPlayedCards() {
+    public LinkedList<Game.Card> getPlayedCards() {
         return playedCards;
     }
 

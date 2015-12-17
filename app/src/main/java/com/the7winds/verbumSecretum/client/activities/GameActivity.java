@@ -125,12 +125,10 @@ public class GameActivity extends Activity {
                             || card == Game.Card.KING_CARD) {
                         for (AvaView ava : playersAvas.values()) {
                             ava.setHighlightClickable();
-                            ava.setClickable(true);
                         }
 
                         if (card == Game.Card.PRINCE_CARD) {
                             myAva.setHighlightClickable();
-                            myAva.setClickable(true);
                         }
 
                         state = State.SUBJECT_SELECT;
@@ -173,11 +171,8 @@ public class GameActivity extends Activity {
 
     private class AvaView extends FrameLayout {
 
-        private final Drawable defaultImage = getResources().getDrawable(R.drawable.normal);
-        private final Drawable clickableImage = getResources().getDrawable(R.drawable.clickable);
-        private final Drawable currentImage = getResources().getDrawable(R.drawable.current);
-        private final Drawable inactiveImage = getResources().getDrawable(R.drawable.inactive);
         private final ImageView imageView = new ImageView(GameActivity.this);
+        private boolean inactiveFlag = false;
 
         public AvaView(final String id) {
             super(GameActivity.this);
@@ -202,8 +197,6 @@ public class GameActivity extends Activity {
 
             imageView.setLayoutParams(new LayoutParams(edge, edge));
 
-            setClickable(false);
-
             setNormal();
         }
 
@@ -214,19 +207,30 @@ public class GameActivity extends Activity {
         }
 
         public void setNormal() {
-            imageView.setImageDrawable(defaultImage);
+            if (!inactiveFlag) {
+                imageView.setImageResource(R.drawable.normal);
+                imageView.setClickable(false);
+            }
         }
 
         public void setHighlightClickable() {
-            imageView.setImageDrawable(clickableImage);
+            if (!inactiveFlag) {
+                imageView.setImageResource(R.drawable.clickable);
+                imageView.setClickable(true);
+            }
         }
 
         public void setHighlightCurrent() {
-            imageView.setImageDrawable(currentImage);
+            if (!inactiveFlag) {
+                imageView.setImageResource(R.drawable.current);
+                imageView.setClickable(false);
+            }
         }
 
         public void setHighlightInactive() {
-            imageView.setImageDrawable(inactiveImage);
+            imageView.setImageResource(R.drawable.inactive);
+            imageView.setClickable(false);
+            inactiveFlag = true;
         }
     }
 
@@ -419,6 +423,12 @@ public class GameActivity extends Activity {
             EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Leave()));
             EventBus.getDefault().unregister(this);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        freeResources();
+        super.onPause();
     }
 
     @Override
