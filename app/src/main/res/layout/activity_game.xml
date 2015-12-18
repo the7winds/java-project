@@ -121,12 +121,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/rules_rules_text"/>
-
                 <TableLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -155,7 +149,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="4"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:text="@string/rules_c1_effect"/>
+                            android:text="@string/rules_c1_effect_short"/>
 
                     </TableRow>
 
@@ -172,7 +166,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="4"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:text="@string/rules_c2_effect"/>
+                            android:text="@string/rules_c2_effect_short"/>
 
                     </TableRow>
 
@@ -189,7 +183,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="4"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:text="@string/rules_c3_effect"/>
+                            android:text="@string/rules_c3_effect_short"/>
 
                     </TableRow>
 
@@ -206,7 +200,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="4"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:text="@string/rules_c4_effect"/>
+                            android:text="@string/rules_c4_effect_short"/>
 
                     </TableRow>
 
@@ -223,7 +217,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="4"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:text="@string/rules_c5_effect"/>
+                            android:text="@string/rules_c5_effect_short"/>
 
                     </TableRow>
 
@@ -240,7 +234,7 @@
                             android:adjustViewBounds="true"
                             android:layout_weight="4"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:text="@string/rules_c6_effect"/>
+                            android:text="@string/rules_c6_effect_short"/>
 
                     </TableRow>
 
@@ -257,7 +251,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="4"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:text="@string/rules_c7_effect"/>
+                            android:text="@string/rules_c7_effect_short"/>
 
                     </TableRow>
 
@@ -274,7 +268,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="4"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:text="@string/rules_c8_effect"/>
+                            android:text="@string/rules_c8_effect_short"/>
 
                     </TableRow>
 

@@ -55,22 +55,67 @@
 
     <!-- Rules -->
     <string name="rules_title">Rules:</string>
+
     <string name="rules_rules_text">
-        The main goal is to stay alive. On your turn, you`ll
-        got second card in your hand. Then choose one of the
-        two cards touch it, and game applies its effect.
+        The main goal is to stay alive. On your turn, draw the top card
+        from the deck and add it to your hand. Then choose one of the two
+        cards in your hand and discard it face up in front of you. Apply any
+        effect on the card you discarded. You must apply its effect, even if it
+        is bad for you. All discarded cards remain in front of the player who
+        discarded them. This helps players to figure out which cards other players
+        might be holding. Once you finish applying the card’s effect, the turn passes
+        to the next player.
     </string>
+
     <string name="rules_cards_effects">Cards effects:</string>
-    <string name="rules_c1_effect">Try to guess opponent card. If it is the opponent leaves the game.</string>
-    <string name="rules_c2_effect">Applying to opponent shows his hand card</string>
-    <string name="rules_c3_effect">Compares your card, with opponent`s card. The player leaves th game if his card order less.</string>
-    <string name="rules_c4_effect">Protects you from attack during one round.</string>
-    <string name="rules_c5_effect">Changes your card.</string>
-    <string name="rules_c6_effect">Swap your card with chosen player.</string>
-    <string name="rules_c7_effect">You must play the card if you also have 6 or 5.</string>
-    <string name="rules_c8_effect">If you play the card, you leave the game.</string>
+
+    <string name="rules_c1_effect">
+        Choose another card and another player. If that player has that card
+        he or she is out of the round. (5 cards)
+    </string>
+
+    <string name="rules_c2_effect">
+        Look at another player`s hand. (2 cards)
+    </string>
+
+    <string name="rules_c3_effect">
+        You and another player secretly compare hands. The player with
+        the lower value is out of the round. (2 cards)
+    </string>
+
+    <string name="rules_c4_effect">
+        Until next turn, ignore all effects from other players cards. (2 cards)
+    </string>
+
+    <string name="rules_c5_effect">
+        Choose any player including yourself to discard his or her hand
+        and draw a new card. (2 cards)
+    </string>
+
+    <string name="rules_c6_effect">
+        Trade hands with another player of your choice. (1 card)
+    </string>
+
+    <string name="rules_c7_effect">
+        If you have this card and the 5th or 6th in your hand, you must
+        discard this card. (1 card)
+    </string>
+
+    <string name="rules_c8_effect">
+        If you discard this card, you are out of the round. (1 card)
+    </string>
+
     <string name="rules_back">back to menu</string>
     <string name="login_incorrect_login">incorrect login</string>
     <string name="game_cards_counter">Cards in deck:</string>
+
+    <string name="rules_c1_effect_short">Guess a player`s hand (5 cards)</string>
+    <string name="rules_c2_effect_short">Look at a hand. (2 cards)</string>
+    <string name="rules_c3_effect_short">Compare hands; Lower hand is out. (2 cards)</string>
+    <string name="rules_c4_effect_short">Protect until next turn. (2 cards)</string>
+    <string name="rules_c5_effect_short">One player discards his or her hand. (2 cards)</string>
+    <string name="rules_c6_effect_short">Trade hands. (1 card)</string>
+    <string name="rules_c7_effect_short">Discard if caught with 5th or 6th. (1 card)</string>
+    <string name="rules_c8_effect_short">Lose if discarded. (1 card)</string>
 
 </resources>
