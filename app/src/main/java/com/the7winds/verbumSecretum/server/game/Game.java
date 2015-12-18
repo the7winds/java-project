@@ -287,11 +287,11 @@ public class Game {
     }
 
     private String genDescription(String object, Card card) {
-        return object + " played " + Integer.toString(card.ordinal());
+        return object + " played " + Integer.toString(card.ordinal() + 1);
     }
 
     private String genDescription(String object, Card card, String subject) {
-        return object + " played " + Integer.toString(card.ordinal()) + " on " + subject;
+        return object + " played " + Integer.toString(card.ordinal() + 1) + " on " + subject;
     }
 
     private String genDescription(String object, Card card, String subject, Card role) {
