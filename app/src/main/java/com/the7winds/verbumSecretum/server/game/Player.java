@@ -4,7 +4,6 @@ import com.the7winds.verbumSecretum.server.network.ConnectionHandler;
 
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * Created by the7winds on 28.10.15.

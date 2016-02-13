@@ -6,17 +6,6 @@
 /build
 /captures
 
-.idea/
-VerbumSecretum.iml
-app/app.iml
-app/build.gradle
-app/proguard-rules.pro
-app/src/androidTest/
-app/src/test/
-build.gradle
-gradle.properties
-gradle/
-gradlew
-gradlew.bat
+*.apk
 logcat.txt
-settings.gradle
+*.class
