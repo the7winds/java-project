@@ -37,14 +37,14 @@ public class ConnectionHandler {
         return connection.isClosed();
     }
 
-    public void close() {
+    public void close() throws IOException {
         try {
             executorService.shutdownNow();
             closeLatch.await();
-            connection.close();
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        connection.close();
     }
 
     private class ReceiveTask implements Runnable {

@@ -39,9 +39,8 @@ public class ConnectionHandler {
     }
 
     public void close() throws IOException {
-        executorService.shutdownNow();
-
         try {
+            executorService.shutdownNow();
             closeLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
