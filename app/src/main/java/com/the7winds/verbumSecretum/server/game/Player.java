@@ -13,8 +13,8 @@ public class Player {
     private String name;
     private ConnectionHandler connection;
 
-    private Collection<Game.Card> handCards = new LinkedList<>();
-    private LinkedList<Game.Card> playedCards = new LinkedList<>();
+    private Collection<Card> handCards = new LinkedList<>();
+    private LinkedList<Card> playedCards = new LinkedList<>();
 
     public Player(ConnectionHandler connection, String name) {
         this.connection = connection;
@@ -25,19 +25,19 @@ public class Player {
         return name;
     }
 
-    public LinkedList<Game.Card> getPlayedCards() {
+    public LinkedList<Card> getPlayedCards() {
         return playedCards;
     }
 
-    public Collection<Game.Card> getHandCards() {
+    public Collection<Card> getHandCards() {
         return handCards;
     }
 
-    public Game.Card getHandCard() {
-        return (handCards.isEmpty() ? null : (Game.Card) handCards.toArray()[0]);
+    public Card getHandCard() {
+        return (handCards.isEmpty() ? null : (Card) handCards.toArray()[0]);
     }
 
-    public void addCard(Game.Card card) {
+    public void addCard(Card card) {
         handCards.add(card);
     }
 

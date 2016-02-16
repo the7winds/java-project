@@ -3,8 +3,8 @@ package com.the7winds.verbumSecretum.client.network;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.the7winds.verbumSecretum.server.game.Card;
 import com.the7winds.verbumSecretum.utils.Message;
-import com.the7winds.verbumSecretum.server.game.Game;
 
 /**
  * Created by the7winds on 28.10.15.
@@ -82,13 +82,13 @@ public class PlayerMessages {
         private static final String ROLE_FIELD = "role";
 
         // fields
-        private Game.Move move;
+        private com.the7winds.verbumSecretum.server.game.Move move;
 
         public Move() {
             super(HEAD);
         }
 
-        public Move(Game.Move move) {
+        public Move(com.the7winds.verbumSecretum.server.game.Move move) {
             super(HEAD);
             this.move = move;
         }
@@ -105,7 +105,7 @@ public class PlayerMessages {
             return new Gson().toJson(moveMsg);
         }
 
-        public Game.Move getMove() {
+        public com.the7winds.verbumSecretum.server.game.Move getMove() {
             return move;
         }
 
@@ -114,11 +114,11 @@ public class PlayerMessages {
             JsonParser parser = new JsonParser();
             JsonObject jsonObject = parser.parse(str).getAsJsonObject();
 
-            move = new Game.Move();
+            move = new com.the7winds.verbumSecretum.server.game.Move();
             move.objectId = jsonObject.get(OBJECT_ID_FIELD).getAsString();
-            move.card = Game.Card.valueOf(jsonObject.get(CARD_FIELD).getAsString());
+            move.card = Card.valueOf(jsonObject.get(CARD_FIELD).getAsString());
             move.subjectId = jsonObject.get(SUBJECT_ID_FIELD).getAsString();
-            move.role = Game.Card.valueOf(jsonObject.get(ROLE_FIELD).getAsString());
+            move.role = Card.valueOf(jsonObject.get(ROLE_FIELD).getAsString());
 
             return this;
         }

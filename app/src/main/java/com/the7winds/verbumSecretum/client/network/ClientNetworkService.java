@@ -6,11 +6,10 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
-import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.other.Events;
+import com.the7winds.verbumSecretum.server.network.Server;
 import com.the7winds.verbumSecretum.utils.Connection;
 import com.the7winds.verbumSecretum.utils.Message;
-import com.the7winds.verbumSecretum.server.network.Server;
 
 import java.net.InetAddress;
 import java.util.concurrent.Callable;
@@ -27,6 +26,7 @@ import de.greenrobot.event.EventBus;
  */
 public class ClientNetworkService extends IntentService {
 
+    private final static String TAG = "Client";
     public final static int CONNECTING_TIMEOUT = 20000;
 
     private InetAddress server;
@@ -92,7 +92,7 @@ public class ClientNetworkService extends IntentService {
         EventBus.getDefault().register(this);
         EventBus.getDefault().register(messageHandler);
 
-        Log.i("Client", "starting");
+        Log.d(TAG, "starting");
 
         try {
             executorService.submit(new Callable<Object>() {
@@ -140,7 +140,7 @@ public class ClientNetworkService extends IntentService {
     }
 
     public void onEvent(Events.StopClientService event) {
-        Log.i("Client" + "(" + ClientUtils.Data.id + ")", "event stop");
+        Log.d(TAG, "event stop");
         EventBus.getDefault().unregister(messageHandler);
         EventBus.getDefault().unregister(this);
 
@@ -148,7 +148,7 @@ public class ClientNetworkService extends IntentService {
             connectionHandler.close();
         }
 
-        Log.i("Client" + "(" + ClientUtils.Data.id + ")", "stopped");
+        Log.d(TAG, "stopped");
         stopSelf();
     }
 }

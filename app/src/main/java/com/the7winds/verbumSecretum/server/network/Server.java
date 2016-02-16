@@ -6,8 +6,8 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
-import com.the7winds.verbumSecretum.utils.Message;
 import com.the7winds.verbumSecretum.server.game.Player;
+import com.the7winds.verbumSecretum.utils.Message;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -21,6 +21,8 @@ import java.util.Set;
  * Created by the7winds on 25.10.15.
  */
 public class Server extends IntentService {
+
+    private static final String TAG = "SERVER";
 
     private static final int SERVER_ACCEPT_TIMEOUT = 100;
     public static final String SERVICE_NAME = "VERBUM_SECRETUM_SERVER";
@@ -67,23 +69,23 @@ public class Server extends IntentService {
             serverSocket = new ServerSocket(0);
             serverSocket.setSoTimeout(SERVER_ACCEPT_TIMEOUT);
 
-            Log.i("SERVER", "register service");
+            Log.d(TAG, "register service");
             registerService();
 
-            Log.i("SERVER", "waits players");
+            Log.d(TAG, "waits players");
             WaitingPlayersHandler waitingPlayersHandler = new WaitingPlayersHandler(this, allConnections);
             Map<String, Player> players = waitingPlayersHandler.getPlayers();
 
-            Log.i("SERVER", "game generated");
+            Log.d(TAG, "game generated");
             GameHandler gameHandler = new GameHandler(this, players);
 
-            Log.i("SERVER", "game start");
+            Log.d(TAG, "game start");
             gameHandler.startGame();
 
-            Log.i("SERVER", "game play");
+            Log.d(TAG, "game play");
             gameHandler.playGame();
 
-            Log.i("SERVER", "game finish");
+            Log.d(TAG, "game finish");
             gameHandler.finishGame();
 
             terminate();
@@ -125,7 +127,7 @@ public class Server extends IntentService {
     }
 
     public void terminate() {
-        Log.i("SERVER", "start terminate");
+        Log.d(TAG, "start terminate");
         nsdManager.unregisterService(registrationListener);
 
         try {
@@ -139,12 +141,12 @@ public class Server extends IntentService {
             e.printStackTrace();
         }
 
-        Log.i("SERVER", "stopped");
+        Log.d(TAG, "stopped");
         stopSelf();
     }
 
     public synchronized void addConnection(String id, ConnectionHandler connectionHandler) {
-        Log.i("SERVER", "player connected");
+        Log.d(TAG, "player connected");
         allConnections.put(id, connectionHandler);
     }
 

@@ -31,10 +31,10 @@ public class Connection {
         writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
     }
 
-    public void send(String message) {
+    public void send(String msg) {
         try {
-            Log.i("MESSAGE_SEND" + "(" + socket.getInetAddress().toString() + ")", message);
-            writer.write(message);
+            Log.d("MESSAGE_SEND" + "(" + socket.getInetAddress().toString() + ")", msg);
+            writer.write(msg);
             writer.newLine();
             writer.flush();
         } catch (IOException e) {
@@ -48,7 +48,7 @@ public class Connection {
             socket.setSoTimeout(timeout);
             msg = reader.readLine();
             if (msg != null) {
-                Log.i("MESSAGE_RECEIVED" + "(" + socket.getInetAddress().toString() + ")", msg);
+                Log.d("MESSAGE_RECEIVED" + "(" + socket.getInetAddress().toString() + ")", msg);
             }
         } catch (IOException e) {
             e.printStackTrace();

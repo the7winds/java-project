@@ -18,7 +18,8 @@ import com.the7winds.verbumSecretum.R;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
 import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.client.other.Events;
-import com.the7winds.verbumSecretum.server.game.Game;
+import com.the7winds.verbumSecretum.server.game.Card;
+import com.the7winds.verbumSecretum.server.game.Move;
 import com.the7winds.verbumSecretum.server.network.ServerMessages;
 
 import java.util.Hashtable;
@@ -34,7 +35,7 @@ public class GameActivity extends Activity {
 
     private enum State {WAITING_UPD, CARD_SELECT, SUBJECT_SELECT, ROLE_SELECT, FINISH}
     private State state = State.WAITING_UPD;
-    private final Game.Move move = new Game.Move();
+    private final Move move = new Move();
 
     private ViewGroup handView;
     private TextView infoTextView;
@@ -77,8 +78,8 @@ public class GameActivity extends Activity {
         selector = inflater.inflate(R.layout.game_card_selector, null);
         ViewGroup tableRow = (ViewGroup) selector.findViewWithTag(getString(R.string.game_choose_row));
 
-        for (int i = 1; i < Game.Card.values().length; i++) {
-            CardView cardView = new CardView(Game.Card.values()[i]);
+        for (int i = 1; i < Card.values().length; i++) {
+            CardView cardView = new CardView(Card.values()[i]);
             tableRow.addView(cardView);
         }
     }
@@ -86,10 +87,10 @@ public class GameActivity extends Activity {
     private class CardView extends FrameLayout {
 
         private static final int padding = 3;
-        private final Game.Card card;
+        private final Card card;
         private ImageView imageView;
 
-        public CardView(final Game.Card card) {
+        public CardView(final Card card) {
             super(GameActivity.this);
 
             this.card = card;
@@ -118,16 +119,16 @@ public class GameActivity extends Activity {
                     selectedCard = CardView.this;
                     move.card = card;
 
-                    if (card == Game.Card.GUARD_CARD
-                            || card == Game.Card.PRIEST_CARD
-                            || card == Game.Card.LORD_CARD
-                            || card == Game.Card.PRINCE_CARD
-                            || card == Game.Card.KING_CARD) {
+                    if (card == Card.GUARD_CARD
+                            || card == Card.PRIEST_CARD
+                            || card == Card.LORD_CARD
+                            || card == Card.PRINCE_CARD
+                            || card == Card.KING_CARD) {
                         for (AvaView ava : playersAvas.values()) {
                             ava.setHighlightClickable();
                         }
 
-                        if (card == Game.Card.PRINCE_CARD) {
+                        if (card == Card.PRINCE_CARD) {
                             myAva.setHighlightClickable();
                         }
 
@@ -146,7 +147,7 @@ public class GameActivity extends Activity {
         }
     }
 
-    private Drawable getCardDrawable(Game.Card card) {
+    private Drawable getCardDrawable(Card card) {
         switch (card) {
             case GUARD_CARD:
                 return getResources().getDrawable(R.drawable.c1);
@@ -183,7 +184,7 @@ public class GameActivity extends Activity {
                     resetAvas();
                     move.subjectId = id;
 
-                    if (move.card == Game.Card.GUARD_CARD) {
+                    if (move.card == Card.GUARD_CARD) {
                         state = State.ROLE_SELECT;
                         gameLayout.addView(selector);
                     } else {
@@ -286,7 +287,7 @@ public class GameActivity extends Activity {
             }
         }
 
-        Map<String, Game.Card> cardsThatShouldBeShowed = gameState.getCardsThatShouldBeShowed();
+        Map<String, Card> cardsThatShouldBeShowed = gameState.getCardsThatShouldBeShowed();
 
         if (cardsThatShouldBeShowed.containsKey(ClientUtils.Data.id)) {
             CardView cardView = new CardView(cardsThatShouldBeShowed.get(ClientUtils.Data.id));
@@ -319,7 +320,7 @@ public class GameActivity extends Activity {
     public void onEventMainThread(ServerMessages.YourTurn yourTurn) {
         move.objectId = ClientUtils.Data.id;
 
-        Game.Card card = yourTurn.getCard();
+        Card card = yourTurn.getCard();
         CardView cardView = new CardView(card);
         handView.addView(cardView);
 
@@ -347,7 +348,7 @@ public class GameActivity extends Activity {
 
         TableLayout last = (TableLayout) gameOverFrame.findViewWithTag(getString(R.string.game_last_players));
 
-        for (Pair<String, Game.Card> nameCard : gameOver.getLastNamesCards().values()) {
+        for (Pair<String, Card> nameCard : gameOver.getLastNamesCards().values()) {
             TableRow tableRow = new TableRow(this);
             TextView nameView = new TextView(this);
             CardView cardView = new CardView(nameCard.second);

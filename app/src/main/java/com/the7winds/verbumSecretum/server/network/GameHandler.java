@@ -7,6 +7,8 @@ import com.google.gson.JsonParser;
 import com.the7winds.verbumSecretum.client.network.PlayerMessages;
 import com.the7winds.verbumSecretum.client.other.ClientUtils;
 import com.the7winds.verbumSecretum.server.game.Game;
+import com.the7winds.verbumSecretum.server.game.GameMessages;
+import com.the7winds.verbumSecretum.server.game.Move;
 import com.the7winds.verbumSecretum.server.game.Player;
 
 import java.util.Map;
@@ -18,7 +20,6 @@ public class GameHandler {
 
     private final Server server;
     private final Map<String, Player> players;
-    private Game game;
 
     public GameHandler(Server server, Map<String, Player> players) {
         this.server = server;
@@ -28,16 +29,16 @@ public class GameHandler {
     public void startGame() {
         server.broadcast(new ServerMessages.GameStarting());
 
-        game = new Game(players);
+        Game.getInstance().reset(players);
 
-        server.broadcast(game.genStartMessage());
+        server.broadcast(GameMessages.newStartMessage());
     }
 
     public void playGame()
             throws ServerExceptions.ServerDeviceDisconnected, ServerExceptions.ActivePlayerDisconnected {
-        server.sendTo(game.getCurrentPlayerId(), game.genYourTurnMessage());
+        server.sendTo(Game.getInstance().getCurrentPlayerId(), GameMessages.newYourTurnMessage());
 
-        while (!game.isFinished()) {
+        while (!Game.getInstance().isFinished()) {
             Pair<String, String> idMsg = ConnectionHandler.popMessage();
 
             if (idMsg != null) {
@@ -64,18 +65,18 @@ public class GameHandler {
     }
 
     public void finishGame() {
-        server.broadcast(game.genGameOverMessage());
+        server.broadcast(GameMessages.newGameOverMessage());
     }
 
     private void onMoveMessage(String id, PlayerMessages.Move message) {
-        Game.Move move = message.getMove();
+        Move move = message.getMove();
 
-        if (game.isValidMove(move)) {
-            game.applyMove(move);
+        if (Game.getInstance().checkMove(move)) {
+            Game.getInstance().applyMove(move);
             server.sendTo(id, new ServerMessages.Correct());
-            if (game.nextPlayer()) {
-                server.broadcast(game.genGameStateMessage());
-                server.sendTo(game.getCurrentPlayerId(), game.genYourTurnMessage());
+            if (Game.getInstance().nextPlayer()) {
+                server.broadcast(GameMessages.newGameStateMessage());
+                server.sendTo(Game.getInstance().getCurrentPlayerId(), GameMessages.newYourTurnMessage());
             }
         } else {
             server.sendTo(id, new ServerMessages.InvalidMove());
@@ -89,7 +90,7 @@ public class GameHandler {
             throw new ServerExceptions.ServerDeviceDisconnected();
         }
 
-        if (game.isActivePlayer(id)) {
+        if (Game.getInstance().isActivePlayer(id)) {
             throw new ServerExceptions.ActivePlayerDisconnected();
         } else {
             server.disconnect(id);

@@ -6,9 +6,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.the7winds.verbumSecretum.utils.Message;
-import com.the7winds.verbumSecretum.server.game.Game;
+import com.the7winds.verbumSecretum.server.game.Card;
 import com.the7winds.verbumSecretum.server.game.Player;
+import com.the7winds.verbumSecretum.utils.Message;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -138,7 +138,7 @@ public class ServerMessages {
         private static final String DECK_SIZE_FIELD = "deck_size";
 
         private final Map<String, String> idToNames = new Hashtable<>();
-        private final Map<String, Game.Card> idToCard = new Hashtable<>();
+        private final Map<String, Card> idToCard = new Hashtable<>();
         private String first;
         private int deckSize;
 
@@ -150,7 +150,7 @@ public class ServerMessages {
             return idToNames;
         }
 
-        public Map<String, Game.Card> getIdToCard() {
+        public Map<String, Card> getIdToCard() {
             return idToCard;
         }
 
@@ -205,7 +205,7 @@ public class ServerMessages {
             for (int i = 0; i < ids.size(); ++i) {
                 String id = ids.get(i).getAsString();
                 String name = names.get(i).getAsString();
-                Game.Card card = Game.Card.valueOf(cards.get(i).getAsString());
+                Card card = Card.valueOf(cards.get(i).getAsString());
                 idToNames.put(id, name);
                 idToCard.put(id, card);
             }
@@ -245,23 +245,23 @@ public class ServerMessages {
         private static final String DECK_SIZE_FIELD = "deck_size";
 
         // fields
-        private Pair<String, Game.Card> newPlayedCard;
-        private Map<String, Game.Card> cardsThatShouldBeShowed = new Hashtable<>();
+        private Pair<String, Card> newPlayedCard;
+        private Map<String, Card> cardsThatShouldBeShowed = new Hashtable<>();
         private String current;
         private String description;
         private int deckSize;
 
-        public Map<String, Game.Card> getActivePlayersIdHandCard() {
+        public Map<String, Card> getActivePlayersIdHandCard() {
             return activePlayersIdHandCard;
         }
 
-        private Map<String, Game.Card> activePlayersIdHandCard = new Hashtable<>();
+        private Map<String, Card> activePlayersIdHandCard = new Hashtable<>();
 
-        public Pair<String, Game.Card> getNewPlayedCard() {
+        public Pair<String, Card> getNewPlayedCard() {
             return newPlayedCard;
         }
 
-        public Map<String, Game.Card> getCardsThatShouldBeShowed() {
+        public Map<String, Card> getCardsThatShouldBeShowed() {
             return cardsThatShouldBeShowed;
         }
 
@@ -276,8 +276,8 @@ public class ServerMessages {
         public GameState(String current
                 , String description
                 , int deckSize
-                , Pair<String, Game.Card> newPlayedCard
-                , Map<String, Game.Card> cardsThatShouldBeShowed
+                , Pair<String, Card> newPlayedCard
+                , Map<String, Card> cardsThatShouldBeShowed
                 , Map<String, Player> activePlayersId) {
             super(HEAD);
 
@@ -336,14 +336,14 @@ public class ServerMessages {
             current = jsonObject.get(CURRENT_FIELD).getAsString();
 
             newPlayedCard = new Pair<>(jsonObject.get(NEW_PLAYED_CARD_ID_FIELD).getAsString(),
-                    Game.Card.valueOf(jsonObject.get(NEW_PLAYED_CARD_FIELD).getAsString()));
+                    Card.valueOf(jsonObject.get(NEW_PLAYED_CARD_FIELD).getAsString()));
 
             JsonArray ids = jsonObject.getAsJsonArray(CARDS_THAT_SHOULD_BE_SHOWED_ID_FIELD);
             JsonArray cards = jsonObject.getAsJsonArray(CARDS_THAT_SHOULD_BE_SHOWED_CARDS_FIELD);
 
             for (int i = 0; i < ids.size(); i++) {
                 String id = ids.get(i).getAsString();
-                Game.Card card = Game.Card.valueOf(cards.get(i).getAsString());
+                Card card = Card.valueOf(cards.get(i).getAsString());
                 cardsThatShouldBeShowed.put(id, card);
             }
 
@@ -352,7 +352,7 @@ public class ServerMessages {
 
             for (int i = 0; i < activeIds.size(); i++) {
                 String id = activeIds.get(i).getAsString();
-                Game.Card card = Game.Card.valueOf(activeHand.get(i).getAsString());
+                Card card = Card.valueOf(activeHand.get(i).getAsString());
                 activePlayersIdHandCard.put(id, card);
             }
 
@@ -376,18 +376,18 @@ public class ServerMessages {
         // json structure
         private final static String CARD_FIELD = "card";
 
-        public Game.Card getCard() {
+        public Card getCard() {
             return card;
         }
 
         // fields
-        private Game.Card card;
+        private Card card;
 
         public YourTurn() {
             super(HEAD);
         }
 
-        public YourTurn(Game.Card card) {
+        public YourTurn(Card card) {
             super(HEAD);
             this.card = card;
         }
@@ -404,7 +404,7 @@ public class ServerMessages {
         @Override
         public Message deserialize(String str) {
             JsonParser jsonParser = new JsonParser();
-            card = Game.Card.valueOf(jsonParser.parse(str)
+            card = Card.valueOf(jsonParser.parse(str)
                     .getAsJsonObject()
                     .get("card")
                     .getAsString());
@@ -429,7 +429,7 @@ public class ServerMessages {
         private static final String LAST_NAMES_FIELD = "names";
         private static final String LAST_HAND_CARDS_FIELD = "cards";
 
-        private Map<String, Pair<String, Game.Card>> lastNamesCards = new Hashtable<>();
+        private Map<String, Pair<String, Card>> lastNamesCards = new Hashtable<>();
 
         private Map<String, String> winners = new Hashtable<>();
 
@@ -437,7 +437,7 @@ public class ServerMessages {
             return winners;
         }
 
-        public Map<String, Pair<String, Game.Card>> getLastNamesCards() {
+        public Map<String, Pair<String, Card>> getLastNamesCards() {
             return lastNamesCards;
         }
 
@@ -477,7 +477,7 @@ public class ServerMessages {
             JsonArray cards = new JsonArray();
             JsonArray names = new JsonArray();
 
-            for (Map.Entry<String, Pair<String, Game.Card>> entry : lastNamesCards.entrySet()) {
+            for (Map.Entry<String, Pair<String, Card>> entry : lastNamesCards.entrySet()) {
                 ids.add(entry.getKey());
                 cards.add(entry.getValue().second.toString());
                 names.add(entry.getValue().first);
@@ -509,7 +509,7 @@ public class ServerMessages {
 
             for (int i = 0; i < ids.size(); i++) {
                 String id = ids.get(i).getAsString();
-                Game.Card card = Game.Card.valueOf(cards.get(i).getAsString());
+                Card card = Card.valueOf(cards.get(i).getAsString());
                 String name = names.get(i).getAsString();
                 lastNamesCards.put(id, new Pair<>(name, card));
             }
