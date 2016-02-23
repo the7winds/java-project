@@ -7,9 +7,8 @@ import com.the7winds.verbumSecretum.utils.Connection;
 import com.the7winds.verbumSecretum.utils.Message;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -25,8 +24,8 @@ public class ConnectionHandler {
     private final String id;
     private final Connection connection;
 
-    private final Queue<Message> sendMessageQueue = new LinkedList<>();
-    private static final Queue<Pair<String, String>> receivedMessageQueue = new LinkedList<>();
+    private final Queue<Message> sendMessageQueue = new ConcurrentLinkedQueue<>();
+    private static final Queue<Pair<String, String>> receivedMessageQueue = new ConcurrentLinkedQueue<>();
 
     private final ExecutorService executorService =
             new ThreadPoolExecutor(2, 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>()) {
@@ -39,8 +38,6 @@ public class ConnectionHandler {
                     }
                 }
             }; // Executors.newFixedThreadPool(2);
-
-    private final CountDownLatch closeLatch = new CountDownLatch(1);
 
     public ConnectionHandler(String id, Connection connection) {
         this.id = id;
@@ -55,7 +52,7 @@ public class ConnectionHandler {
     public void close() throws IOException {
         try {
             executorService.shutdownNow();
-            closeLatch.await();
+            executorService.awaitTermination(TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Log.e(TAG, e.getMessage());
         } finally {
@@ -64,19 +61,11 @@ public class ConnectionHandler {
     }
 
     public static Pair<String, String> popMessage() {
-        synchronized (receivedMessageQueue) {
-            if (!receivedMessageQueue.isEmpty()) {
-                return receivedMessageQueue.remove();
-            }
-        }
-
-        return null;
+        return receivedMessageQueue.poll();
     }
 
     public void send(Message message) {
-        synchronized (sendMessageQueue) {
-            sendMessageQueue.add(message);
-        }
+        sendMessageQueue.add(message);
     }
 
     public String getId() {
@@ -87,13 +76,7 @@ public class ConnectionHandler {
         @Override
         public void run() {
             while (!connection.isClosed() && !Thread.interrupted()) {
-                Message message = null;
-
-                synchronized (sendMessageQueue) {
-                    if (!sendMessageQueue.isEmpty()) {
-                        message = sendMessageQueue.remove();
-                    }
-                }
+                Message message = sendMessageQueue.poll();
 
                 if (message != null) {
                     connection.send(message.serialize());
@@ -101,14 +84,10 @@ public class ConnectionHandler {
             }
 
             if (!connection.isClosed()) {
-                synchronized (sendMessageQueue) {
-                    while (!sendMessageQueue.isEmpty()) {
-                        connection.send(sendMessageQueue.remove().serialize());
-                    }
+                while (!sendMessageQueue.isEmpty()) {
+                    connection.send(sendMessageQueue.remove().serialize());
                 }
             }
-
-            closeLatch.countDown();
         }
     }
 
@@ -118,9 +97,7 @@ public class ConnectionHandler {
             while (!connection.isClosed() && !Thread.interrupted()) {
                 String msg = connection.receive(TIMEOUT);
                 if (msg != null) {
-                    synchronized (receivedMessageQueue) {
-                        receivedMessageQueue.add(new Pair<>(id, msg));
-                    }
+                    receivedMessageQueue.add(new Pair<>(id, msg));
                 }
             }
         }

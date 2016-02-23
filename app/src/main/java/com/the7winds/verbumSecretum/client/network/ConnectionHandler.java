@@ -7,9 +7,8 @@ import com.the7winds.verbumSecretum.utils.Connection;
 import com.the7winds.verbumSecretum.utils.Message;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -25,7 +24,7 @@ public class ConnectionHandler {
     private final static String TAG = "ConnectionHandler";
     private final static int TIMEOUT = 100;
     private final Connection connection;
-    private final Queue<Message> sendMessageQueue = new LinkedList<>();
+    private final Queue<Message> sendMessageQueue = new ConcurrentLinkedQueue<>();
     private final ExecutorService executorService =
             new ThreadPoolExecutor(2, 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>()) {
                 private static final String TAG = "ThreadPoolExecutor";
@@ -37,8 +36,6 @@ public class ConnectionHandler {
                     }
                 }
             }; // Executors.newFixedThreadPool(2);
-
-    private final CountDownLatch closeLatch = new CountDownLatch(1);
 
     public ConnectionHandler(Connection connection) {
         this.connection = connection;
@@ -56,7 +53,7 @@ public class ConnectionHandler {
     public void close() throws IOException {
         try {
             executorService.shutdownNow();
-            closeLatch.await();
+            executorService.awaitTermination(TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Log.e(TAG, e.getMessage());
         } finally {
@@ -78,8 +75,6 @@ public class ConnectionHandler {
                 String msg = connection.receive(TIMEOUT);
                 EventBus.getDefault().post(new Events.ReceivedMessage(msg));
             }
-
-            closeLatch.countDown();
         }
     }
 
@@ -87,13 +82,7 @@ public class ConnectionHandler {
         @Override
         public void run() {
             while (!connection.isClosed() && !Thread.interrupted()) {
-                Message message = null;
-
-                synchronized (sendMessageQueue) {
-                    if (!sendMessageQueue.isEmpty()) {
-                        message = sendMessageQueue.remove();
-                    }
-                }
+                Message message = sendMessageQueue.poll();
 
                 if (message != null) {
                     connection.send(message.serialize());
@@ -103,8 +92,6 @@ public class ConnectionHandler {
     }
 
     public void send(Message message) {
-        synchronized (sendMessageQueue) {
-            sendMessageQueue.add(message);
-        }
+        sendMessageQueue.offer(message);
     }
 }
