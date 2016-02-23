@@ -11,7 +11,9 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import de.greenrobot.event.EventBus;
 
@@ -24,7 +26,18 @@ public class ConnectionHandler {
     private final static int TIMEOUT = 100;
     private final Connection connection;
     private final Queue<Message> sendMessageQueue = new LinkedList<>();
-    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
+    private final ExecutorService executorService =
+            new ThreadPoolExecutor(2, 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>()) {
+                private static final String TAG = "ThreadPoolExecutor";
+                @Override
+                protected void afterExecute(Runnable r, Throwable t) {
+                    super.afterExecute(r, t);
+                    if (t != null) {
+                        Log.e(TAG, t.getMessage());
+                    }
+                }
+            }; // Executors.newFixedThreadPool(2);
+
     private final CountDownLatch closeLatch = new CountDownLatch(1);
 
     public ConnectionHandler(Connection connection) {
