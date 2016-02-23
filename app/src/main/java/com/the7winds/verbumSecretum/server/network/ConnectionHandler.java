@@ -46,8 +46,9 @@ public class ConnectionHandler {
             closeLatch.await();
         } catch (InterruptedException e) {
             Log.e(TAG, e.getMessage());
+        } finally {
+            connection.close();
         }
-        connection.close();
     }
 
     public static Pair<String, String> popMessage() {
