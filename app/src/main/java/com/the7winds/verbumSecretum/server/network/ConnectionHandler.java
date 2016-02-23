@@ -1,5 +1,6 @@
 package com.the7winds.verbumSecretum.server.network;
 
+import android.util.Log;
 import android.util.Pair;
 
 import com.the7winds.verbumSecretum.utils.Connection;
@@ -17,6 +18,7 @@ import java.util.concurrent.Executors;
  */
 public class ConnectionHandler {
 
+    private static final String TAG ="ConnectionHandler";
     private final static int TIMEOUT = 100;
     private final String id;
     private final Connection connection;
@@ -43,7 +45,7 @@ public class ConnectionHandler {
             executorService.shutdownNow();
             closeLatch.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
         connection.close();
     }

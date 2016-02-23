@@ -11,6 +11,7 @@ import com.the7winds.verbumSecretum.server.network.Server;
 import com.the7winds.verbumSecretum.utils.Connection;
 import com.the7winds.verbumSecretum.utils.Message;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -113,14 +114,14 @@ public class ClientNetworkService extends IntentService {
                 }
             }).get(CONNECTING_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
             EventBus.getDefault().post(new Events.ServerNotFoundError());
             if (nsdManager != null) {
                 nsdManager.stopServiceDiscovery(discoveryListener);
             }
             errorHandle();
         } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
             EventBus.getDefault().post(new Events.ClientServiceError());
             errorHandle();
         }
@@ -145,7 +146,11 @@ public class ClientNetworkService extends IntentService {
         EventBus.getDefault().unregister(this);
 
         if (connectionHandler != null && connectionHandler.isClosed()) {
-            connectionHandler.close();
+            try {
+                connectionHandler.close();
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
 
         Log.d(TAG, "stopped");

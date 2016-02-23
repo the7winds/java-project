@@ -1,5 +1,7 @@
 package com.the7winds.verbumSecretum.client.network;
 
+import android.util.Log;
+
 import com.the7winds.verbumSecretum.client.other.Events;
 import com.the7winds.verbumSecretum.utils.Connection;
 import com.the7winds.verbumSecretum.utils.Message;
@@ -18,6 +20,7 @@ import de.greenrobot.event.EventBus;
  */
 public class ConnectionHandler {
 
+    private final static String TAG = "ConnectionHandler";
     private final static int TIMEOUT = 100;
     private final Connection connection;
     private final Queue<Message> sendMessageQueue = new LinkedList<>();
@@ -42,7 +45,7 @@ public class ConnectionHandler {
             executorService.shutdownNow();
             closeLatch.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
         connection.close();
     }

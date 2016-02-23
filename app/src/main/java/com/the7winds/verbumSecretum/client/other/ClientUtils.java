@@ -3,6 +3,7 @@ package com.the7winds.verbumSecretum.client.other;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -19,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientUtils {
 
+    private static final String TAG = "ClientUtils";
 
     public static class Data {
         public static String id;
@@ -148,7 +150,7 @@ public class ClientUtils {
 
         } catch (InvocationTargetException | NoSuchMethodException
                 | IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
 
         return false;

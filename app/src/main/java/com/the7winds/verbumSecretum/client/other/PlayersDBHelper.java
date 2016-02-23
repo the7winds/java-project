@@ -6,11 +6,13 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 /**
  * Created by the7winds on 21.10.15.
  */
 public class PlayersDBHelper extends SQLiteOpenHelper {
+    private static final String TAG = "PlayersDBHelper";
     public static final int VERSION = 1;
 
     private static final String DB_NAME = "P_DB";
@@ -57,9 +59,8 @@ public class PlayersDBHelper extends SQLiteOpenHelper {
     public void addPlayer(String name, Integer won, Integer all) {
         try {
             getWritableDatabase().execSQL(ADD_PLAYER, new String[]{name, won.toString(), all.toString()});
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            Log.e(TAG, e.getMessage());
         }
     }
 

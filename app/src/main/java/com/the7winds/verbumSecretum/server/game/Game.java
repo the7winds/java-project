@@ -1,5 +1,6 @@
 package com.the7winds.verbumSecretum.server.game;
 
+import android.util.Log;
 import android.util.Pair;
 
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.Random;
  */
 public class Game {
 
+    private static final String TAG = "Game";
     private static final Game INSTANCE = new Game();
 
     private boolean finished = false;
@@ -139,7 +141,7 @@ public class Game {
             cardsThatShouldBeShowed = move.card.getMoveApplier().applyMove(subject, object, move, this);
             description = move.card.getMoveDescription().getMoveDescription(subject, object, move);
         } catch (Cards.MoveApplier.CantMoveException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
 
         if (CardsDeck.getInstance().size() < 2 || activePlayers.size() == 1) {

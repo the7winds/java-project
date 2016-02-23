@@ -15,6 +15,7 @@ import java.net.Socket;
  */
 public class Connection {
 
+    private static final String TAG = "Connection";
     private Socket socket;
     private BufferedReader reader;
     private BufferedWriter writer;
@@ -38,7 +39,7 @@ public class Connection {
             writer.newLine();
             writer.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
     }
 
@@ -51,7 +52,7 @@ public class Connection {
                 Log.d("MESSAGE_RECEIVED" + "(" + socket.getInetAddress().toString() + ")", msg);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
         return msg;
     }
@@ -68,7 +69,7 @@ public class Connection {
         try {
             return reader.ready();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
         return false;
     }

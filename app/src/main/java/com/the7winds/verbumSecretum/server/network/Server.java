@@ -89,10 +89,9 @@ public class Server extends IntentService {
             gameHandler.finishGame();
 
             terminate();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             nsdManager.unregisterService(registrationListener);
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         } catch (ServerExceptions.ServerDeviceDisconnected
                 | ServerExceptions.ActivePlayerDisconnected serverException) {
             terminate();
@@ -138,7 +137,7 @@ public class Server extends IntentService {
 
             serverSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
 
         Log.d(TAG, "stopped");
@@ -157,7 +156,7 @@ public class Server extends IntentService {
                 handler.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
     }
 
@@ -169,7 +168,7 @@ public class Server extends IntentService {
                 handler.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
     }
 
