@@ -60,7 +60,7 @@ public class PlayersDBHelper extends SQLiteOpenHelper {
         try {
             getWritableDatabase().execSQL(ADD_PLAYER, new String[]{name, won.toString(), all.toString()});
         } catch (SQLException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
         }
     }
 

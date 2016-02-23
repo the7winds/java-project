@@ -54,7 +54,7 @@ public class ConnectionHandler {
             executorService.shutdownNow();
             executorService.awaitTermination(TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
         } finally {
             connection.close();
         }

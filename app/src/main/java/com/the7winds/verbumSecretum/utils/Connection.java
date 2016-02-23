@@ -39,7 +39,7 @@ public class Connection {
             writer.newLine();
             writer.flush();
         } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
         }
     }
 
@@ -52,7 +52,7 @@ public class Connection {
                 Log.d("MESSAGE_RECEIVED" + "(" + socket.getInetAddress().toString() + ")", msg);
             }
         } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
         }
         return msg;
     }
@@ -69,7 +69,7 @@ public class Connection {
         try {
             return reader.ready();
         } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
         }
         return false;
     }

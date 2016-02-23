@@ -114,14 +114,14 @@ public class ClientNetworkService extends IntentService {
                 }
             }).get(CONNECTING_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
             EventBus.getDefault().post(new Events.ServerNotFoundError());
             if (nsdManager != null) {
                 nsdManager.stopServiceDiscovery(discoveryListener);
             }
             errorHandle();
         } catch (InterruptedException | ExecutionException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
             EventBus.getDefault().post(new Events.ClientServiceError());
             errorHandle();
         }
@@ -145,15 +145,15 @@ public class ClientNetworkService extends IntentService {
         EventBus.getDefault().unregister(messageHandler);
         EventBus.getDefault().unregister(this);
 
-        if (connectionHandler != null && connectionHandler.isClosed()) {
-            try {
+        try {
+            if (connectionHandler != null && connectionHandler.isClosed()) {
                 connectionHandler.close();
-            } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
             }
+        } catch (IOException e) {
+            Log.e(TAG, e.toString());
+        } finally {
+            Log.d(TAG, "stopped");
+            stopSelf();
         }
-
-        Log.d(TAG, "stopped");
-        stopSelf();
     }
 }

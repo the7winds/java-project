@@ -141,7 +141,7 @@ public class Game {
             cardsThatShouldBeShowed = move.card.getMoveApplier().applyMove(subject, object, move, this);
             description = move.card.getMoveDescription().getMoveDescription(subject, object, move);
         } catch (Cards.MoveApplier.CantMoveException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
         }
 
         if (CardsDeck.getInstance().size() < 2 || activePlayers.size() == 1) {

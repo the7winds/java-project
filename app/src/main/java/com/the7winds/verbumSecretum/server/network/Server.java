@@ -91,7 +91,7 @@ public class Server extends IntentService {
             terminate();
         } catch (IOException e) {
             nsdManager.unregisterService(registrationListener);
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
         } catch (ServerExceptions.ServerDeviceDisconnected
                 | ServerExceptions.ActivePlayerDisconnected serverException) {
             terminate();
@@ -137,11 +137,11 @@ public class Server extends IntentService {
 
             serverSocket.close();
         } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
+        } finally {
+            Log.d(TAG, "stopped");
+            stopSelf();
         }
-
-        Log.d(TAG, "stopped");
-        stopSelf();
     }
 
     public synchronized void addConnection(String id, ConnectionHandler connectionHandler) {
@@ -156,7 +156,7 @@ public class Server extends IntentService {
                 handler.close();
             }
         } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
         }
     }
 
@@ -168,7 +168,7 @@ public class Server extends IntentService {
                 handler.close();
             }
         } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.toString());
         }
     }
 
