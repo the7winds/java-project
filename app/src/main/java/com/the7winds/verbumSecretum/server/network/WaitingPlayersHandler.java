@@ -1,5 +1,6 @@
 package com.the7winds.verbumSecretum.server.network;
 
+import android.os.SystemClock;
 import android.util.Pair;
 
 import com.google.gson.JsonObject;
@@ -11,6 +12,8 @@ import com.the7winds.verbumSecretum.utils.Connection;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.Time;
+import java.util.GregorianCalendar;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
@@ -58,20 +61,24 @@ public class WaitingPlayersHandler {
     }
 
     private void waitPlayers() throws ServerExceptions.ServerDeviceDisconnected {
-        TimeChanges timeChanges = new TimeChanges();
-        timeChanges.start();
+        final int TIMEOUT = 3000; // MILLISECONDS
+        long checkpoint = System.currentTimeMillis();
 
-        while (timeChanges.isAlive()) {
+        while (true) {
             boolean broadcastFlag = false;
             boolean timeFlag = false;
 
             broadcastFlag = onMessageReceived();
             timeFlag = broadcastFlag | (readyPlayers.size() < MIN_PLAYERS_NUM);
             if (timeFlag) {
-                timeChanges.timeFlagUp();
+                checkpoint = System.currentTimeMillis();
             }
             if (broadcastFlag) {
                 server.broadcast(new ServerMessages.WaitingPlayersStatus(readyPlayers));
+            }
+
+            if (System.currentTimeMillis() - checkpoint >= TIMEOUT) {
+                break;
             }
         }
     }
@@ -163,23 +170,4 @@ public class WaitingPlayersHandler {
         }
     }
 
-    private class TimeChanges extends Thread {
-        private static final int delay = 3000;
-        private AtomicBoolean timeFlag = new AtomicBoolean(true);
-
-        @Override
-        public void run() {
-            try {
-                while (timeFlag.get()) {
-                    timeFlag.set(false);
-                    Thread.sleep(delay);
-                }
-            } catch (InterruptedException ignored) {
-            }
-        }
-
-        public void timeFlagUp() {
-            timeFlag.set(true);
-        }
-    }
 }
