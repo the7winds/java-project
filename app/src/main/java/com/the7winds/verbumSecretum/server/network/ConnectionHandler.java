@@ -65,7 +65,7 @@ public class ConnectionHandler {
     }
 
     public void send(Message message) {
-        sendMessageQueue.add(message);
+        sendMessageQueue.offer(message);
     }
 
     public String getId() {
@@ -75,8 +75,9 @@ public class ConnectionHandler {
     private class SendTask implements Runnable {
         @Override
         public void run() {
+            Message message;
             while (!connection.isClosed() && !Thread.interrupted()) {
-                Message message = sendMessageQueue.poll();
+                message = sendMessageQueue.poll();
 
                 if (message != null) {
                     connection.send(message.serialize());
@@ -84,8 +85,8 @@ public class ConnectionHandler {
             }
 
             if (!connection.isClosed()) {
-                while (!sendMessageQueue.isEmpty()) {
-                    connection.send(sendMessageQueue.remove().serialize());
+                while ((message = sendMessageQueue.poll()) != null) {
+                    connection.send(message.serialize());
                 }
             }
         }
@@ -97,7 +98,7 @@ public class ConnectionHandler {
             while (!connection.isClosed() && !Thread.interrupted()) {
                 String msg = connection.receive(TIMEOUT);
                 if (msg != null) {
-                    receivedMessageQueue.add(new Pair<>(id, msg));
+                    receivedMessageQueue.offer(new Pair<>(id, msg));
                 }
             }
         }
