@@ -94,9 +94,9 @@ public class GameActivity extends Activity {
             super(GameActivity.this);
 
             this.card = card;
-            
+
             setPadding(padding, padding, padding, padding);
-            Drawable image = getCardDrawable(card);
+            Drawable image = card.getDrawable(GameActivity.this);
 
             imageView = new ImageView(GameActivity.this);
             imageView.setImageDrawable(image);
@@ -144,29 +144,6 @@ public class GameActivity extends Activity {
                     state = State.WAITING_UPD;
                 }
             }
-        }
-    }
-
-    private Drawable getCardDrawable(Card card) {
-        switch (card) {
-            case GUARD_CARD:
-                return getResources().getDrawable(R.drawable.c1);
-            case PRIEST_CARD:
-                return getResources().getDrawable(R.drawable.c2);
-            case LORD_CARD:
-                return getResources().getDrawable(R.drawable.c3);
-            case STAFF_CARD:
-                return getResources().getDrawable(R.drawable.c4);
-            case PRINCE_CARD:
-                return getResources().getDrawable(R.drawable.c5);
-            case KING_CARD:
-                return getResources().getDrawable(R.drawable.c6);
-            case COUNTESS_CARD:
-                return getResources().getDrawable(R.drawable.c7);
-            case PRINCESS_CARD:
-                return getResources().getDrawable(R.drawable.c8);
-            default:
-                return null;
         }
     }
 

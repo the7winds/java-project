@@ -1,5 +1,10 @@
 package com.the7winds.verbumSecretum.server.game;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+
+import com.the7winds.verbumSecretum.R;
+import com.the7winds.verbumSecretum.server.game.Cards.DrawableGetter;
 import com.the7winds.verbumSecretum.server.game.Cards.MoveApplier;
 import com.the7winds.verbumSecretum.server.game.Cards.MoveChecker;
 import com.the7winds.verbumSecretum.server.game.Cards.MoveDescription;
@@ -21,7 +26,6 @@ public enum Card {
                             subject.getPlayedCards().getLast() != STAFF_CARD));
         }
     }, new MoveApplier() {
-
         @Override
         public Map<String, Card> applyMove(Player subject, Player object, Move move,
                                            Game game) throws CantMoveException {
@@ -39,6 +43,11 @@ public enum Card {
         @Override
         public String getMoveDescription(Player subject, Player object, Move move) {
             return genDescription(object.getName(), move.card, subject.getName(), move.role);
+        }
+    }, new DrawableGetter() {
+        @Override
+        public Drawable getDrawble(Context context) {
+            return context.getResources().getDrawable(R.drawable.c1);
         }
     }),
 
@@ -64,6 +73,11 @@ public enum Card {
         @Override
         public String getMoveDescription(Player subject, Player object, Move move) {
             return genDescription(object.getName(), move.card, subject.getName());
+        }
+    }, new DrawableGetter() {
+        @Override
+        public Drawable getDrawble(Context context) {
+            return context.getResources().getDrawable(R.drawable.c2);
         }
     }),
 
@@ -104,6 +118,11 @@ public enum Card {
         public String getMoveDescription(Player subject, Player object, Move move) {
             return genDescription(object.getName(), move.card, subject.getName());
         }
+    }, new DrawableGetter() {
+        @Override
+        public Drawable getDrawble(Context context) {
+            return context.getResources().getDrawable(R.drawable.c3);
+        }
     }),
 
     STAFF_CARD(4, new MoveChecker() {
@@ -120,6 +139,11 @@ public enum Card {
         @Override
         public String getMoveDescription(Player subject, Player object, Move move) {
             return genDescription(object.getName(), move.card);
+        }
+    }, new DrawableGetter() {
+        @Override
+        public Drawable getDrawble(Context context) {
+            return context.getResources().getDrawable(R.drawable.c4);
         }
     }),
 
@@ -141,6 +165,11 @@ public enum Card {
         @Override
         public String getMoveDescription(Player subject, Player object, Move move) {
             return genDescription(object.getName(), move.card, subject.getName());
+        }
+    }, new DrawableGetter() {
+        @Override
+        public Drawable getDrawble(Context context) {
+            return context.getResources().getDrawable(R.drawable.c5);
         }
     }),
 
@@ -170,6 +199,11 @@ public enum Card {
         public String getMoveDescription(Player subject, Player object, Move move) {
             return genDescription(object.getName(), move.card, subject.getName());
         }
+    }, new DrawableGetter() {
+        @Override
+        public Drawable getDrawble(Context context) {
+            return context.getResources().getDrawable(R.drawable.c6);
+        }
     }),
 
     COUNTESS_CARD(7, new MoveChecker() {
@@ -186,6 +220,11 @@ public enum Card {
         @Override
         public String getMoveDescription(Player subject, Player object, Move move) {
             return genDescription(object.getName(), move.card);
+        }
+    }, new DrawableGetter() {
+        @Override
+        public Drawable getDrawble(Context context) {
+            return context.getResources().getDrawable(R.drawable.c7);
         }
     }),
 
@@ -206,34 +245,48 @@ public enum Card {
         public String getMoveDescription(Player subject, Player object, Move move) {
             return genDescription(object.getName(), move.card);
         }
+    }, new DrawableGetter() {
+        @Override
+        public Drawable getDrawble(Context context) {
+            return context.getResources().getDrawable(R.drawable.c8);
+        }
     });
 
-    Card(int weight, MoveChecker moveChecker, MoveApplier moveApplier, MoveDescription moveDescription) {
+    Card(int weight,
+         MoveChecker moveChecker,
+         MoveApplier moveApplier,
+         MoveDescription moveDescription,
+         DrawableGetter drawableGetter) {
         this.weight = weight;
         this.moveChecker = moveChecker;
         this.moveApplier = moveApplier;
         this.moveDescription = moveDescription;
+        this.drawableGetter = drawableGetter;
     }
 
     private final MoveChecker moveChecker;
     private final MoveApplier moveApplier;
     private final MoveDescription moveDescription;
+    private final DrawableGetter drawableGetter;
     private final int weight;
 
     public int getWeight() {
         return weight;
     }
 
-    public MoveApplier getMoveApplier() {
-        return moveApplier;
+    public Map<String, Card> applyMove(Player player, Player object, Move move, Game game) throws MoveApplier.CantMoveException {
+        return moveApplier.applyMove(player, object, move, game);
     }
 
-    public MoveChecker getMoveChecker() {
-        return moveChecker;
+    public boolean checkMove(Player subject, Player object, Move move, Game game) {
+        return moveChecker.checkMove(subject, object, move, game);
     }
 
-    public MoveDescription getMoveDescription() {
-        return moveDescription;
+    public String getMoveDescription(Player subject, Player object, Move move) {
+        return moveDescription.getMoveDescription(subject, object, move);
     }
 
+    public Drawable getDrawable(Context context) {
+        return drawableGetter.getDrawble(context);
+    }
 }

@@ -1,5 +1,8 @@
 package com.the7winds.verbumSecretum.server.game;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+
 import java.util.Map;
 
 /**
@@ -51,4 +54,7 @@ public class Cards {
         }
     }
 
+    interface DrawableGetter {
+        Drawable getDrawble(Context context);
+    }
 }

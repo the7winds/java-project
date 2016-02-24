@@ -126,7 +126,7 @@ public class Game {
         Player object = activePlayers.get(move.objectId);
         Player subject = activePlayers.get(move.subjectId);
 
-        return move.card.getMoveChecker().checkMove(subject, object, move, this);
+        return move.card.checkMove(subject, object, move, this);
     }
 
     public void applyMove(Move move) {
@@ -138,8 +138,8 @@ public class Game {
         lastChange = new Pair<>(move.objectId, move.card);
 
         try {
-            cardsThatShouldBeShowed = move.card.getMoveApplier().applyMove(subject, object, move, this);
-            description = move.card.getMoveDescription().getMoveDescription(subject, object, move);
+            cardsThatShouldBeShowed = move.card.applyMove(subject, object, move, this);
+            description = move.card.getMoveDescription(subject, object, move);
         } catch (Cards.MoveApplier.CantMoveException e) {
             Log.e(TAG, e.toString());
         }
