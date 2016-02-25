@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ConnectionHandler {
 
-    private static final String TAG ="ConnectionHandler";
+    private static final String TAG = "ConnectionHandler";
     private final static int TIMEOUT = 100;
     private final String id;
     private final Connection connection;

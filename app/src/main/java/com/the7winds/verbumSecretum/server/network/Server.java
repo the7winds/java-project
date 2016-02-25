@@ -90,10 +90,11 @@ public class Server extends IntentService {
 
             terminate();
         } catch (IOException e) {
-            nsdManager.unregisterService(registrationListener);
             Log.e(TAG, e.toString());
+            nsdManager.unregisterService(registrationListener);
         } catch (ServerExceptions.ServerDeviceDisconnected
                 | ServerExceptions.ActivePlayerDisconnected serverException) {
+            Log.e(TAG, serverException.toString());
             terminate();
         }
     }
