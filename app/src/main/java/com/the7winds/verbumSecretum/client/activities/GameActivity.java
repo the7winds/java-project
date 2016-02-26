@@ -33,7 +33,7 @@ public class GameActivity extends Activity {
 
     private AvaView myAva;
 
-    private enum State {WAITING_UPD, CARD_SELECT, SUBJECT_SELECT, ROLE_SELECT, FINISH}
+    private enum State {WAITING_UPD, CARD_SELECT, OPPONENT_SELECT, ROLE_SELECT, FINISH}
     private State state = State.WAITING_UPD;
     private final Move move = new Move();
 
@@ -132,7 +132,7 @@ public class GameActivity extends Activity {
                             myAva.setHighlightClickable();
                         }
 
-                        state = State.SUBJECT_SELECT;
+                        state = State.OPPONENT_SELECT;
                     } else {
                         EventBus.getDefault().post(new Events.SendToServerEvent(new PlayerMessages.Move(move)));
                         state = State.WAITING_UPD;
@@ -159,7 +159,7 @@ public class GameActivity extends Activity {
                 @Override
                 public void onClick(View v) {
                     resetAvas();
-                    move.subjectId = id;
+                    move.opponentId = id;
 
                     if (move.card == Card.GUARD_CARD) {
                         state = State.ROLE_SELECT;
@@ -295,7 +295,7 @@ public class GameActivity extends Activity {
     }
 
     public void onEventMainThread(ServerMessages.YourTurn yourTurn) {
-        move.objectId = ClientUtils.Data.id;
+        move.playerId = ClientUtils.Data.id;
 
         Card card = yourTurn.getCard();
         CardView cardView = new CardView(card);
@@ -378,6 +378,7 @@ public class GameActivity extends Activity {
     }
 
     public void onClickShowCardFrame(View view) {
+        showCardFrame.removeAllViews();
         gameLayout.removeView(showCardFrame);
     }
 

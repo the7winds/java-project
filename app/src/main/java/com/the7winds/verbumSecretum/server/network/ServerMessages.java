@@ -10,6 +10,7 @@ import com.the7winds.verbumSecretum.server.game.Card;
 import com.the7winds.verbumSecretum.server.game.Player;
 import com.the7winds.verbumSecretum.utils.Message;
 
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -252,7 +253,7 @@ public class ServerMessages {
         private int deckSize;
 
         public Map<String, Card> getActivePlayersIdHandCard() {
-            return activePlayersIdHandCard;
+            return new HashMap<>(activePlayersIdHandCard);
         }
 
         private Map<String, Card> activePlayersIdHandCard = new Hashtable<>();
@@ -262,7 +263,7 @@ public class ServerMessages {
         }
 
         public Map<String, Card> getCardsThatShouldBeShowed() {
-            return cardsThatShouldBeShowed;
+            return new HashMap<>(cardsThatShouldBeShowed);
         }
 
         public String getCurrent() {

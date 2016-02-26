@@ -2,8 +2,8 @@ package com.the7winds.verbumSecretum.server.game;
 
 import com.the7winds.verbumSecretum.server.network.ConnectionHandler;
 
-import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by the7winds on 28.10.15.
@@ -13,8 +13,8 @@ public class Player {
     private String name;
     private ConnectionHandler connection;
 
-    private Collection<Card> handCards = new LinkedList<>();
-    private LinkedList<Card> playedCards = new LinkedList<>();
+    private List<Card> handCards = new LinkedList<>();
+    private Card lastPlayedCard = null;
 
     public Player(ConnectionHandler connection, String name) {
         this.connection = connection;
@@ -25,23 +25,35 @@ public class Player {
         return name;
     }
 
-    public LinkedList<Card> getPlayedCards() {
-        return playedCards;
+    public Card getLastPlayedCard() {
+        return lastPlayedCard;
     }
 
-    public Collection<Card> getHandCards() {
-        return handCards;
+    public boolean containsHand(Card card) {
+        return handCards.contains(card);
+    }
+
+    public void clearHandCards() {
+        handCards.clear();
     }
 
     public Card getHandCard() {
-        return (handCards.isEmpty() ? null : (Card) handCards.toArray()[0]);
+        return (handCards.isEmpty() ? null : handCards.get(0));
     }
 
-    public void addCard(Card card) {
+    public boolean removeHandCard(Card card) {
+        return handCards.remove(card);
+    }
+
+    public void addHandCard(Card card) {
         handCards.add(card);
     }
 
     public String getId() {
         return connection.getId();
+    }
+
+    public void setLastPlayedCard(Card card) {
+        lastPlayedCard = card;
     }
 }

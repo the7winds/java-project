@@ -11,10 +11,10 @@ import java.util.Map;
 public class Cards {
 
     private static abstract class Moves {
-        protected static boolean cantMove(String objectId, Game game) {
+        protected static boolean cantMove(String playerId, Game game) {
             for (Map.Entry<String, Player> entry : game.getActivePlayers().entrySet()) {
-                if (!entry.getKey().equals(objectId) && (entry.getValue().getPlayedCards().isEmpty()
-                        || entry.getValue().getPlayedCards().getLast() != Card.STAFF_CARD)) {
+                if (!entry.getKey().equals(playerId) && (entry.getValue().getLastPlayedCard() == null
+                        || entry.getValue().getLastPlayedCard() != Card.STAFF_CARD)) {
                     return false;
                 }
             }
@@ -23,14 +23,14 @@ public class Cards {
     }
 
     static abstract class MoveChecker extends Moves {
-        public abstract boolean checkMove(Player subject, Player object, Move move, Game game);
+        public abstract boolean checkMove(Player player, Player opponent, Move move, Game game);
     }
 
     static abstract class MoveApplier extends Moves{
-        public abstract Map<String, Card> applyMove(Player subject, Player object, Move move, Game game) throws CantMoveException;
+        public abstract Map<String, Card> applyMove(Player player, Player opponent, Move move, Game game) throws CantMoveException;
 
         protected static void makeInactive(Player player, Game game) {
-            game.getActivePlayers().remove(player.getId());
+            game.removeActivePlayer(player.getId());
         }
 
         public static class CantMoveException extends Exception {
@@ -39,18 +39,18 @@ public class Cards {
     }
 
     static abstract class MoveDescription {
-        public abstract String getMoveDescription(Player subject, Player object, Move move);
+        public abstract String getMoveDescription(Player player, Player opponent, Move move);
 
-        protected static String genDescription(String object, Card card) {
-            return object + " played " + Integer.toString(card.getWeight());
+        protected static String genDescription(String player, Card card) {
+            return player + " played " + Integer.toString(card.getWeight());
         }
 
-        protected static String genDescription(String object, Card card, String subject) {
-            return object + " played " + Integer.toString(card.getWeight()) + " on " + subject;
+        protected static String genDescription(String player, Card card, String opponent) {
+            return player + " played " + Integer.toString(card.getWeight()) + " on " + opponent;
         }
 
-        protected static String genDescription(String object, Card card, String subject, Card role) {
-            return object + " suppose that " + subject + "`s role is " + Integer.toString(role.getWeight());
+        protected static String genDescription(String player, Card card, String opponent, Card role) {
+            return player + " suppose that " + opponent + "`s role is " + Integer.toString(role.getWeight());
         }
     }
 

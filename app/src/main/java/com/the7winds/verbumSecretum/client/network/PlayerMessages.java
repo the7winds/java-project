@@ -76,9 +76,9 @@ public class PlayerMessages {
         // JSON fields consts
         public static final String HEAD = "Move";
         // JSON fields structure
-        private static final String SUBJECT_ID_FIELD = "subjectId";
+        private static final String PLAYER_ID_FIELD = "playerId";
         private static final String CARD_FIELD = "card";
-        private static final String OBJECT_ID_FIELD = "objectId";
+        private static final String OPPONENT_ID_FIELD = "opponentId";
         private static final String ROLE_FIELD = "role";
 
         // fields
@@ -97,9 +97,9 @@ public class PlayerMessages {
         public String serialize() {
             JsonObject moveMsg = getBaseJsonObject();
 
-            moveMsg.addProperty(OBJECT_ID_FIELD, move.objectId);
+            moveMsg.addProperty(PLAYER_ID_FIELD, move.playerId);
             moveMsg.addProperty(CARD_FIELD, move.card.name());
-            moveMsg.addProperty(SUBJECT_ID_FIELD, move.subjectId);
+            moveMsg.addProperty(OPPONENT_ID_FIELD, move.opponentId);
             moveMsg.addProperty(ROLE_FIELD, move.role.name());
 
             return new Gson().toJson(moveMsg);
@@ -115,9 +115,9 @@ public class PlayerMessages {
             JsonObject jsonObject = parser.parse(str).getAsJsonObject();
 
             move = new com.the7winds.verbumSecretum.server.game.Move();
-            move.objectId = jsonObject.get(OBJECT_ID_FIELD).getAsString();
+            move.playerId = jsonObject.get(PLAYER_ID_FIELD).getAsString();
             move.card = Card.valueOf(jsonObject.get(CARD_FIELD).getAsString());
-            move.subjectId = jsonObject.get(SUBJECT_ID_FIELD).getAsString();
+            move.opponentId = jsonObject.get(OPPONENT_ID_FIELD).getAsString();
             move.role = Card.valueOf(jsonObject.get(ROLE_FIELD).getAsString());
 
             return this;

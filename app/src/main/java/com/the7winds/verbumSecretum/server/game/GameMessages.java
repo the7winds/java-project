@@ -19,13 +19,15 @@ public class GameMessages {
         return new ServerMessages.GameState(Game.getInstance().getCurrentPlayerId()
                 , Game.getInstance().getDescription()
                 , Game.CardsDeck.getInstance().size()
-                , Game.getInstance().getLastChange()
+                , Game.getInstance().getLastPlayed()
                 , Game.getInstance().getCardsThatShouldBeShowed()
                 , Game.getInstance().getActivePlayers());
     }
 
     public static ServerMessages.YourTurn newYourTurnMessage() {
-        Card card = Game.CardsDeck.getInstance().getLastTakenCard();
+        Card card = Game.CardsDeck.getInstance().getTopCard();
+        String playerId = Game.getInstance().getCurrentPlayerId();
+        Game.getInstance().getActivePlayers().get(playerId).addHandCard(card);
         return new ServerMessages.YourTurn(card);
     }
 

@@ -5,6 +5,7 @@ import android.util.Pair;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class Game {
     private static final String TAG = "Game";
     private static final Game INSTANCE = new Game();
 
-    private boolean finished = false;
+    private boolean finished;
 
     private Map<String, Player> activePlayers;
     private Player[] allPlayers;
@@ -33,12 +34,16 @@ public class Game {
 
         private static final CardsDeck INSTANCE = new CardsDeck();
 
-        private Queue<Card> deck = new LinkedList<>();
-        private Card lastTakenCard;
+        private Queue<Card> deck;
 
         private CardsDeck() {
-            List<Integer> nums = Arrays.asList(new Integer[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 });
+            reset();
+        }
 
+        public void reset() {
+            deck = new LinkedList<>();
+
+            final List<Integer> nums = Arrays.asList(new Integer[] { 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8 });
             Collections.shuffle(nums, new Random());
 
             for (Integer n : nums) {
@@ -56,21 +61,16 @@ public class Game {
         }
 
         public Card getTopCard() {
-            lastTakenCard = deck.remove();
-            return lastTakenCard;
+            return deck.remove();
         }
 
         public int size() {
             return deck.size();
         }
-
-        public Card getLastTakenCard() {
-            return lastTakenCard;
-        }
     }
 
-    private Map<String, Card> cardsThatShouldBeShowed = new Hashtable<>();
-    private Pair<String, Card> lastChange;
+    private Map<String, Card> cardsThatShouldBeShowed;
+    private Pair<String, Card> lastPlayed;
     private String description;
 
     private Game() {}
@@ -83,8 +83,8 @@ public class Game {
         return description;
     }
 
-    Pair<String, Card> getLastChange() {
-        return lastChange;
+    Pair<String, Card> getLastPlayed() {
+        return lastPlayed;
     }
 
     Map<String, Card> getCardsThatShouldBeShowed() {
@@ -99,8 +99,12 @@ public class Game {
         return activePlayers.containsKey(id);
     }
 
+    public Player removeActivePlayer(String id) {
+        return activePlayers.remove(id);
+    }
+
     public Map<String,Player> getActivePlayers() {
-        return activePlayers;
+        return new HashMap<>(activePlayers);
     }
 
     void finishGame() {
@@ -108,38 +112,44 @@ public class Game {
     }
 
     public void reset(Map<String, Player> allPlayers) {
+        finished = false;
+
         activePlayers = allPlayers;
         this.allPlayers = allPlayers.values().toArray(new Player[allPlayers.size()]);
 
         currentIdx = Math.abs(new Random().nextInt()) % this.allPlayers.length;
+        CardsDeck.getInstance().reset();
+
+        cardsThatShouldBeShowed = new Hashtable<>();
 
         giveCards();
     }
 
     private void giveCards() {
         for (Player player : activePlayers.values()) {
-            player.addCard(CardsDeck.getInstance().getTopCard());
+            player.addHandCard(CardsDeck.getInstance().getTopCard());
         }
     }
 
     public boolean checkMove(Move move) {
-        Player object = activePlayers.get(move.objectId);
-        Player subject = activePlayers.get(move.subjectId);
+        Player player = activePlayers.get(move.playerId);
+        Player opponent = activePlayers.get(move.opponentId);
 
-        return move.card.checkMove(subject, object, move, this);
+        return move.card.checkMove(player, opponent, move, this);
     }
 
     public void applyMove(Move move) {
-        Player object = activePlayers.get(move.objectId);
-        Player subject = activePlayers.get(move.subjectId);
+        Card card = move.card;
+        Player player = activePlayers.get(move.playerId);
+        Player opponent = activePlayers.get(move.opponentId);
 
-        object.getHandCards().remove(move.card);
-        object.getPlayedCards().add(move.card);
-        lastChange = new Pair<>(move.objectId, move.card);
+        player.removeHandCard(card);
+        player.setLastPlayedCard(card);
+        lastPlayed = new Pair<>(player.getId(), card);
 
         try {
-            cardsThatShouldBeShowed = move.card.applyMove(subject, object, move, this);
-            description = move.card.getMoveDescription(subject, object, move);
+            cardsThatShouldBeShowed = card.applyMove(player, opponent, move, this);
+            description = card.getMoveDescription(player, opponent, move);
         } catch (Cards.MoveApplier.CantMoveException e) {
             Log.e(TAG, e.toString());
         }
@@ -153,8 +163,6 @@ public class Game {
         if (finished) {
             return false;
         }
-
-        allPlayers[currentIdx].addCard(CardsDeck.getInstance().getTopCard());
 
         do {
             currentIdx = (currentIdx + 1) % allPlayers.length;
