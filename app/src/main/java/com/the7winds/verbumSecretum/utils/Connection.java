@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 /**
  * Created by the7winds on 21.11.15.
@@ -51,6 +52,7 @@ public class Connection {
             if (msg != null) {
                 Log.d("MESSAGE_RECEIVED" + "(" + socket.getInetAddress().toString() + ")", msg);
             }
+        } catch (SocketTimeoutException ignored) {
         } catch (IOException e) {
             Log.e(TAG, e.toString());
         }
