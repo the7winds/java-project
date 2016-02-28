@@ -1,6 +1,7 @@
 package com.the7winds.verbumSecretum.client.activities.menuFragments;
 
 import android.app.Fragment;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 
 import com.the7winds.verbumSecretum.R;
 import com.the7winds.verbumSecretum.client.other.ClientUtils;
+import com.the7winds.verbumSecretum.databinding.MenuLoginExistedPlayerBinding;
 
 import java.util.List;
 
@@ -25,11 +27,8 @@ public class Login extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View loginLayout = inflater.inflate(R.layout.menu_login, container, false);
-
         existedPlayersList = (TableLayout) loginLayout.findViewById(R.id.login_list_view);
-
         updateExistedPlayersList();
-
         return loginLayout;
     }
 
@@ -42,10 +41,9 @@ public class Login extends Fragment {
     }
 
     private void addPlayerToTable(ClientUtils.PlayerStatisticsData playerStatisticsData) {
-        ViewGroup existedPlayerView = (ViewGroup) View.inflate(getActivity(), R.layout.menu_login_existed_player, null);
-        TextView text = (TextView) existedPlayerView.findViewWithTag(getString(R.string.login_existed_player_name_tag));
-        text.setText(playerStatisticsData.name);
-        existedPlayersList.addView(existedPlayerView);
+        MenuLoginExistedPlayerBinding binding =
+                MenuLoginExistedPlayerBinding.inflate(getActivity().getLayoutInflater(), existedPlayersList, true);
+        binding.setPlayerStatisticsData(playerStatisticsData);
     }
 
     public interface LoginListener {
@@ -55,8 +53,7 @@ public class Login extends Fragment {
     }
 
     public String getNameByView(View view) {
-        ViewGroup viewGroup = (ViewGroup) view.getParent();
-        TextView text = (TextView) viewGroup.findViewWithTag(getString(R.string.login_existed_player_name_tag));
-        return text.getText().toString();
+        MenuLoginExistedPlayerBinding binding = DataBindingUtil.getBinding(view);
+        return  binding.getPlayerStatisticsData().name;
     }
 }

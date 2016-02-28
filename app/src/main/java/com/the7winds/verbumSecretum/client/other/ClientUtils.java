@@ -2,6 +2,8 @@ package com.the7winds.verbumSecretum.client.other;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.databinding.BaseObservable;
+import android.databinding.Bindable;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
@@ -11,6 +13,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -33,7 +36,7 @@ public class ClientUtils {
         public static PlayerStatisticsData playerStatisticsData;
     }
 
-    public static class PlayerStatisticsData {
+    public static class PlayerStatisticsData extends BaseObservable {
         public String name = "";
         public int all = 0;
         public int won = 0;
@@ -44,6 +47,15 @@ public class ClientUtils {
             this.won = won;
         }
 
+        @Bindable
+        public int getAll() {
+            return all;
+        }
+
+        @Bindable
+        public int getWon() {
+            return won;
+        }
     }
 
     private static boolean authorised = false;

@@ -1,31 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableRow
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/existed_player_color_outer">
-
-    <LinearLayout
-        android:layout_width="0dp"
+<layout>
+    <data>
+        <variable
+            name="playerStatisticsData"
+            type="com.the7winds.verbumSecretum.client.other.ClientUtils.PlayerStatisticsData"/>
+    </data>
+    <TableRow
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/existed_player_color_inner"
-        android:layout_weight="3">
+        android:background="@color/existed_player_color_outer"
+        android:clickable="true"
+        android:onClick="onClickChooseExistedPlayer">
 
-        <TextView
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:tag="@string/login_existed_player_name_tag"
-            android:onClick="onClickChooseExistedPlayer"
-            android:clickable="true"
-            style="@style/TextAppearance.AppCompat.Medium"/>
+            android:background="@color/existed_player_color_inner"
+            android:layout_weight="3">
 
-    </LinearLayout>
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="@{playerStatisticsData.name}"
+                style="@style/TextAppearance.AppCompat.Medium"/>
 
-    <ImageView
-        android:layout_width="0dp"
-        android:adjustViewBounds="true"
-        android:onClick="onClickDeleteExistedPlayer"
-        android:layout_weight="0.3"
-        android:src="@drawable/delete"/>
+        </LinearLayout>
 
-</TableRow>
+        <ImageView
+            android:layout_width="0dp"
+            android:adjustViewBounds="true"
+            android:onClick="onClickDeleteExistedPlayer"
+            android:layout_weight="0.3"
+            android:src="@drawable/delete"/>
+
+    </TableRow>
+</layout>
