@@ -7,6 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.the7winds.verbumSecretum.server.game.Card;
+import com.the7winds.verbumSecretum.server.game.Cards;
 import com.the7winds.verbumSecretum.server.game.Player;
 import com.the7winds.verbumSecretum.utils.Message;
 
@@ -206,7 +207,7 @@ public class ServerMessages {
             for (int i = 0; i < ids.size(); ++i) {
                 String id = ids.get(i).getAsString();
                 String name = names.get(i).getAsString();
-                Card card = Card.valueOf(cards.get(i).getAsString());
+                Card card = Cards.valueOf(cards.get(i).getAsString());
                 idToNames.put(id, name);
                 idToCard.put(id, card);
             }
@@ -299,7 +300,7 @@ public class ServerMessages {
             gameData.addProperty(CURRENT_FIELD, current);
 
             gameData.addProperty(NEW_PLAYED_CARD_ID_FIELD, newPlayedCard.first);
-            gameData.addProperty(NEW_PLAYED_CARD_FIELD, newPlayedCard.second.toString());
+            gameData.addProperty(NEW_PLAYED_CARD_FIELD, newPlayedCard.second.name());
 
             JsonArray ids = new JsonArray();
             JsonArray cards = new JsonArray();
@@ -316,7 +317,7 @@ public class ServerMessages {
             JsonArray activeHand = new JsonArray();
             for (String id : activePlayersIdHandCard.keySet()) {
                 activeIds.add(id);
-                activeHand.add(activePlayersIdHandCard.get(id).toString());
+                activeHand.add(activePlayersIdHandCard.get(id).name());
             }
 
             gameData.add(ACTIVE_PLAYERS_ID_FIELD, activeIds);
@@ -337,14 +338,14 @@ public class ServerMessages {
             current = jsonObject.get(CURRENT_FIELD).getAsString();
 
             newPlayedCard = new Pair<>(jsonObject.get(NEW_PLAYED_CARD_ID_FIELD).getAsString(),
-                    Card.valueOf(jsonObject.get(NEW_PLAYED_CARD_FIELD).getAsString()));
+                    Cards.valueOf(jsonObject.get(NEW_PLAYED_CARD_FIELD).getAsString()));
 
             JsonArray ids = jsonObject.getAsJsonArray(CARDS_THAT_SHOULD_BE_SHOWED_ID_FIELD);
             JsonArray cards = jsonObject.getAsJsonArray(CARDS_THAT_SHOULD_BE_SHOWED_CARDS_FIELD);
 
             for (int i = 0; i < ids.size(); i++) {
                 String id = ids.get(i).getAsString();
-                Card card = Card.valueOf(cards.get(i).getAsString());
+                Card card = Cards.valueOf(cards.get(i).getAsString());
                 cardsThatShouldBeShowed.put(id, card);
             }
 
@@ -353,7 +354,7 @@ public class ServerMessages {
 
             for (int i = 0; i < activeIds.size(); i++) {
                 String id = activeIds.get(i).getAsString();
-                Card card = Card.valueOf(activeHand.get(i).getAsString());
+                Card card = Cards.valueOf(activeHand.get(i).getAsString());
                 activePlayersIdHandCard.put(id, card);
             }
 
@@ -405,7 +406,7 @@ public class ServerMessages {
         @Override
         public Message deserialize(String str) {
             JsonParser jsonParser = new JsonParser();
-            card = Card.valueOf(jsonParser.parse(str)
+            card = Cards.valueOf(jsonParser.parse(str)
                     .getAsJsonObject()
                     .get("card")
                     .getAsString());
@@ -480,7 +481,7 @@ public class ServerMessages {
 
             for (Map.Entry<String, Pair<String, Card>> entry : lastNamesCards.entrySet()) {
                 ids.add(entry.getKey());
-                cards.add(entry.getValue().second.toString());
+                cards.add(entry.getValue().second.name());
                 names.add(entry.getValue().first);
             }
 
@@ -510,7 +511,7 @@ public class ServerMessages {
 
             for (int i = 0; i < ids.size(); i++) {
                 String id = ids.get(i).getAsString();
-                Card card = Card.valueOf(cards.get(i).getAsString());
+                Card card = Cards.valueOf(cards.get(i).getAsString());
                 String name = names.get(i).getAsString();
                 lastNamesCards.put(id, new Pair<>(name, card));
             }

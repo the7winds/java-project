@@ -3,7 +3,7 @@ package com.the7winds.verbumSecretum.client.network;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.the7winds.verbumSecretum.server.game.Card;
+import com.the7winds.verbumSecretum.server.game.Cards;
 import com.the7winds.verbumSecretum.utils.Message;
 
 /**
@@ -116,9 +116,9 @@ public class PlayerMessages {
 
             move = new com.the7winds.verbumSecretum.server.game.Move();
             move.playerId = jsonObject.get(PLAYER_ID_FIELD).getAsString();
-            move.card = Card.valueOf(jsonObject.get(CARD_FIELD).getAsString());
+            move.card = Cards.valueOf(jsonObject.get(CARD_FIELD).getAsString());
             move.opponentId = jsonObject.get(OPPONENT_ID_FIELD).getAsString();
-            move.role = Card.valueOf(jsonObject.get(ROLE_FIELD).getAsString());
+            move.role = Cards.valueOf(jsonObject.get(ROLE_FIELD).getAsString());
 
             return this;
         }

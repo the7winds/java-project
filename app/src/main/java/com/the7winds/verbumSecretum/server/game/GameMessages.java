@@ -33,7 +33,7 @@ public class GameMessages {
 
     public static ServerMessages.GameOver newGameOverMessage() {
         Map<String, String> winners = new Hashtable<>();
-        Card max = Card.GUARD_CARD;
+        Card max = Cards.GUARD_CARD;
 
         for (Map.Entry<String, Player> entry : Game.getInstance().getActivePlayers().entrySet()) {
             String id = entry.getKey();

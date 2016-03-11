@@ -6,8 +6,8 @@ package com.the7winds.verbumSecretum.server.game;
 public class Move {
 
     public String playerId = "";
-    public Card card = Card.GUARD_CARD;
+    public Card card = Cards.GUARD_CARD;
     public String opponentId = "";
-    public Card role = Card.GUARD_CARD;
+    public Card role = Cards.GUARD_CARD;
 
 }

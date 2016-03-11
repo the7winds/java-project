@@ -13,6 +13,15 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 
+import static com.the7winds.verbumSecretum.server.game.Cards.COUNTESS_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.GUARD_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.KING_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.LORD_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.PRIEST_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.PRINCESS_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.PRINCE_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.STAFF_CARD;
+
 /**
  * Created by the7winds on 28.10.15.
  */
@@ -48,14 +57,14 @@ public class Game {
 
             for (Integer n : nums) {
                 switch (n) {
-                    case 1: deck.add(Card.GUARD_CARD);      break;
-                    case 2: deck.add(Card.PRIEST_CARD);     break;
-                    case 3: deck.add(Card.LORD_CARD);       break;
-                    case 4: deck.add(Card.STAFF_CARD);      break;
-                    case 5: deck.add(Card.PRINCE_CARD);     break;
-                    case 6: deck.add(Card.KING_CARD);       break;
-                    case 7: deck.add(Card.COUNTESS_CARD);   break;
-                    case 8: deck.add(Card.PRINCESS_CARD);   break;
+                    case 1: deck.add(GUARD_CARD);      break;
+                    case 2: deck.add(PRIEST_CARD);     break;
+                    case 3: deck.add(LORD_CARD);       break;
+                    case 4: deck.add(STAFF_CARD);      break;
+                    case 5: deck.add(PRINCE_CARD);     break;
+                    case 6: deck.add(KING_CARD);       break;
+                    case 7: deck.add(COUNTESS_CARD);   break;
+                    case 8: deck.add(PRINCESS_CARD);   break;
                 }
             }
         }
@@ -131,6 +140,10 @@ public class Game {
         }
     }
 
+    void setCardsThatShouldBeShowed(Map<String, Card> cardsThatShouldBeShowed) {
+        this.cardsThatShouldBeShowed = cardsThatShouldBeShowed;
+    }
+
     public boolean checkMove(Move move) {
         Player player = activePlayers.get(move.playerId);
         Player opponent = activePlayers.get(move.opponentId);
@@ -148,9 +161,9 @@ public class Game {
         lastPlayed = new Pair<>(player.getId(), card);
 
         try {
-            cardsThatShouldBeShowed = card.applyMove(player, opponent, move, this);
+            card.applyMove(player, opponent, move, this);
             description = card.getMoveDescription(player, opponent, move);
-        } catch (Cards.MoveApplier.CantMoveException e) {
+        } catch (CardUtils.CantMoveException e) {
             Log.e(TAG, e.toString());
         }
 

@@ -29,6 +29,13 @@ import java.util.TreeSet;
 
 import de.greenrobot.event.EventBus;
 
+import static com.the7winds.verbumSecretum.server.game.Cards.GUARD_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.KING_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.LORD_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.PRIEST_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.PRINCE_CARD;
+import static com.the7winds.verbumSecretum.server.game.Cards.values;
+
 public class GameActivity extends Activity {
 
     private AvaView myAva;
@@ -78,8 +85,8 @@ public class GameActivity extends Activity {
         selector = inflater.inflate(R.layout.game_card_selector, null);
         ViewGroup tableRow = (ViewGroup) selector.findViewWithTag(getString(R.string.game_choose_row));
 
-        for (int i = 1; i < Card.values().length; i++) {
-            CardView cardView = new CardView(Card.values()[i]);
+        for (int i = 1; i < values().length; i++) {
+            CardView cardView = new CardView(values()[i]);
             tableRow.addView(cardView);
         }
     }
@@ -119,16 +126,16 @@ public class GameActivity extends Activity {
                     selectedCard = CardView.this;
                     move.card = card;
 
-                    if (card == Card.GUARD_CARD
-                            || card == Card.PRIEST_CARD
-                            || card == Card.LORD_CARD
-                            || card == Card.PRINCE_CARD
-                            || card == Card.KING_CARD) {
+                    if ((card == GUARD_CARD)
+                            || (card == PRIEST_CARD)
+                            || (card == LORD_CARD)
+                            || (card == PRINCE_CARD)
+                            || (card == KING_CARD)) {
                         for (AvaView ava : playersAvas.values()) {
                             ava.setHighlightClickable();
                         }
 
-                        if (card == Card.PRINCE_CARD) {
+                        if (card == PRINCE_CARD) {
                             myAva.setHighlightClickable();
                         }
 
@@ -161,7 +168,7 @@ public class GameActivity extends Activity {
                     resetAvas();
                     move.opponentId = id;
 
-                    if (move.card == Card.GUARD_CARD) {
+                    if (move.card == GUARD_CARD) {
                         state = State.ROLE_SELECT;
                         gameLayout.addView(selector);
                     } else {
